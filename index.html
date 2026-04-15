@@ -16,10 +16,9 @@
     .logo-icon { width: 32px; height: 32px; background: #e63946; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
     .logo-text { font-size: 16px; font-weight: 700; }
     .search-box { background: #111; border: 1px solid #333; border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 6px; }
-    .search-input { background: transparent; border: none; color: #fff; width: 50px; font-size: 12px; }
+    .search-input { background: transparent; border: none; color: #fff; width: 80px; font-size: 12px; }
     .btn { background: #e63946; color: #fff; border: none; padding: 8px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .btn:hover { opacity: 0.9; }
-    .btn-sm { padding: 6px 10px; font-size: 10px; background: #333; }
     
     .hero { padding: 20px 16px 16px; text-align: center; }
     .badge { display: inline-block; background: #e63946; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-bottom: 10px; }
@@ -78,22 +77,24 @@
     .footer { padding: 20px 16px; border-top: 1px solid #222; text-align: center; }
     .footer p { font-size: 11px; opacity: 0.4; }
     
-    .detail-header { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border-bottom: 1px solid #222; }
-    .back-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
-    .detail-title { font-size: 16px; font-weight: 700; flex: 1; }
+    /* Detail Header - シンプルに */
+    .detail-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #222; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; flex-shrink: 0; }
+    .detail-title { font-size: 14px; font-weight: 700; flex: 1; line-height: 1.4; word-break: break-word; }
+    
     .manga-detail { padding: 20px 16px; border-bottom: 1px solid #222; }
     .manga-detail-inner { display: flex; gap: 16px; }
     .manga-cover { width: 100px; height: 140px; background: #333; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.5; }
-    .manga-detail-info { flex: 1; }
+    .manga-detail-info { flex: 1; min-width: 0; }
     .manga-detail-badges { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .manga-detail-badge { background: #e63946; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
     .manga-detail-rating { color: #e63946; font-size: 12px; }
-    .manga-detail-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .manga-detail-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; line-height: 1.4; word-break: break-word; }
     .manga-detail-genre { font-size: 12px; opacity: 0.6; margin-bottom: 8px; }
     .manga-detail-desc { font-size: 12px; opacity: 0.8; line-height: 1.6; }
     
-    .reader { padding: 20px 16px; }
-    .reader-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    /* Reader - タイトルなし */
+    .reader { padding: 16px 16px; }
     .reader-pages { display: flex; flex-direction: column; gap: 8px; }
     .reader-page { background: #333; border-radius: 8px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; position: relative; font-size: 14px; opacity: 0.5; }
     .reader-page-num { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
@@ -113,6 +114,17 @@
     .related-name { font-size: 12px; font-weight: 600; }
     .related-rating { font-size: 10px; color: #e63946; }
     
+    /* Login */
+    .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px 24px; width: 90%; max-width: 320px; }
+    .login-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 24px; color: #fff; }
+    .login-field { margin-bottom: 16px; }
+    .login-label { font-size: 11px; opacity: 0.6; display: block; margin-bottom: 6px; }
+    .login-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; }
+    .login-input:focus { border-color: #e63946; }
+    .login-btn { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+    .login-error { color: #e63946; font-size: 12px; text-align: center; margin-top: 12px; }
+    
     .admin-header { background: #111; }
     .admin-tabs { display: flex; border-bottom: 1px solid #222; background: #111; }
     .admin-tab { flex: 1; padding: 12px; background: transparent; border: none; color: #fff; opacity: 0.6; font-size: 11px; cursor: pointer; }
@@ -131,12 +143,16 @@
     .admin-api-buttons { display: flex; gap: 8px; margin-bottom: 14px; }
     .admin-api-btn { flex: 1; background: #000; border: 1px solid #333; color: #fff; opacity: 0.6; padding: 10px; border-radius: 8px; font-size: 11px; cursor: pointer; }
     .admin-api-btn.active { background: #1a472a; border-color: #22c55e; color: #22c55e; opacity: 1; }
+    .admin-logout { background: #333; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; cursor: pointer; }
   </style>
 </head>
 <body>
   <div id="app"></div>
   
   <script>
+    const ADMIN_ID = 'admin';
+    const ADMIN_PASS = 'manga2026';
+    
     const mangaList = [
       { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A' },
       { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B' },
@@ -195,6 +211,15 @@
     };
 
     let currentPage = 'home', selectedManga = null, diagStep = -1, diagAnswers = [], showResult = false, resultType = null, adminTab = 'site';
+    let isAdminLoggedIn = false, showLoginError = false;
+
+    function checkHash() {
+      if (window.location.hash === '#admin') {
+        if (!isAdminLoggedIn) currentPage = 'login';
+        else currentPage = 'admin';
+      } else currentPage = 'home';
+      render();
+    }
 
     function calculateResult() {
       const counts = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
@@ -206,19 +231,37 @@
 
     function render() {
       const app = document.getElementById('app');
-      if (currentPage === 'admin') app.innerHTML = renderAdmin();
+      if (currentPage === 'login') app.innerHTML = renderLogin();
+      else if (currentPage === 'admin') app.innerHTML = renderAdmin();
       else if (currentPage === 'detail' && selectedManga) app.innerHTML = renderDetail();
       else app.innerHTML = renderHome();
+    }
+
+    function renderLogin() {
+      return `
+        <div class="login-overlay">
+          <div class="login-box">
+            <h2 class="login-title">🔐 管理者ログイン</h2>
+            <div class="login-field">
+              <label class="login-label">ユーザーID</label>
+              <input type="text" id="loginId" class="login-input" placeholder="ID を入力">
+            </div>
+            <div class="login-field">
+              <label class="login-label">パスワード</label>
+              <input type="password" id="loginPass" class="login-input" placeholder="パスワードを入力">
+            </div>
+            <button class="login-btn" onclick="tryLogin()">ログイン</button>
+            ${showLoginError ? '<p class="login-error">ID またはパスワードが違います</p>' : ''}
+            <p style="text-align:center;margin-top:16px;font-size:11px;opacity:0.5;cursor:pointer" onclick="goHome()">← サイトに戻る</p>
+          </div>
+        </div>`;
     }
 
     function renderHome() {
       return `
         <header class="header">
           <div class="logo"><div class="logo-icon">M</div><span class="logo-text">MangaHub</span></div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="search-box"><span style="opacity:0.5">🔍</span><input type="text" class="search-input" placeholder="検索"></div>
-            <button class="btn btn-sm" onclick="goAdmin()">管理</button>
-          </div>
+          <div class="search-box"><span style="opacity:0.5">🔍</span><input type="text" class="search-input" placeholder="検索"></div>
         </header>
         <section class="hero">
           <div class="badge">🔥 今週の注目</div>
@@ -252,77 +295,89 @@
     }
 
     function renderStart() {
-      return `
-        <div style="text-align:center;padding:10px 0">
-          <p style="font-size:12px;opacity:0.7;margin-bottom:12px">5つの質問であなたにピッタリの作品を診断！</p>
-          <button class="btn-start" onclick="startDiag()">🔍 診断してみる</button>
-        </div>`;
+      return `<div style="text-align:center;padding:10px 0"><p style="font-size:12px;opacity:0.7;margin-bottom:12px">5つの質問であなたにピッタリの作品を診断！</p><button class="btn-start" onclick="startDiag()">🔍 診断してみる</button></div>`;
     }
 
     function renderQuestion() {
       const q = diagnosisQuestions[diagStep];
-      return `
-        <div class="diagnosis-question">${q.question}</div>
-        <div class="diagnosis-options">
-          ${q.options.map(o => `
-            <button class="diagnosis-option" onclick="answer('${o.type}')">
-              <span class="diagnosis-option-emoji">${o.emoji}</span>
-              <span class="diagnosis-option-text">${o.text}</span>
-            </button>
-          `).join('')}
-        </div>`;
+      return `<div class="diagnosis-question">${q.question}</div><div class="diagnosis-options">${q.options.map(o => `<button class="diagnosis-option" onclick="answer('${o.type}')"><span class="diagnosis-option-emoji">${o.emoji}</span><span class="diagnosis-option-text">${o.text}</span></button>`).join('')}</div>`;
     }
 
     function renderResult() {
       const r = resultData[resultType], rec = mangaList.filter(m => m.type === resultType).slice(0, 2);
-      return `
-        <div class="diagnosis-result">
-          <div class="diagnosis-result-type">✨ ${r.title}</div>
-          <div class="diagnosis-result-desc">${r.description}</div>
-          <div class="diagnosis-result-tags">${r.tags.map(t => `<span class="diagnosis-result-tag">#${t}</span>`).join('')}</div>
-        </div>
-        <p style="font-size:11px;opacity:0.6;margin-bottom:8px;text-align:center">🎯 あなたへのおすすめ</p>
-        <div class="diagnosis-recommend">
-          ${rec.map(m => `
-            <div class="diagnosis-recommend-item" onclick="openManga(${m.id})">
-              <div class="diagnosis-recommend-thumb">サムネ</div>
-              <div class="diagnosis-recommend-title">${m.title}</div>
-            </div>
-          `).join('')}
-        </div>
-        <button class="btn-reset" onclick="resetDiag()">🔄 もう一回診断する</button>`;
+      return `<div class="diagnosis-result"><div class="diagnosis-result-type">✨ ${r.title}</div><div class="diagnosis-result-desc">${r.description}</div><div class="diagnosis-result-tags">${r.tags.map(t => `<span class="diagnosis-result-tag">#${t}</span>`).join('')}</div></div><p style="font-size:11px;opacity:0.6;margin-bottom:8px;text-align:center">🎯 あなたへのおすすめ</p><div class="diagnosis-recommend">${rec.map(m => `<div class="diagnosis-recommend-item" onclick="openManga(${m.id})"><div class="diagnosis-recommend-thumb">サムネ</div><div class="diagnosis-recommend-title">${m.title}</div></div>`).join('')}</div><button class="btn-reset" onclick="resetDiag()">🔄 もう一回診断する</button>`;
     }
 
     function renderDetail() {
       const m = selectedManga, rel = mangaList.filter(x => x.id !== m.id && x.type === m.type).slice(0, 3);
-      return `<header class="detail-header"><button class="back-btn" onclick="goHome()">←</button><span class="detail-title">${m.title}</span><button class="btn">購入する</button></header>
-        <section class="manga-detail"><div class="manga-detail-inner"><div class="manga-cover">表紙</div><div class="manga-detail-info"><div class="manga-detail-badges">${m.badge ? `<span class="manga-detail-badge">${m.badge}</span>` : ''}<span class="manga-detail-rating">★ ${m.rating}</span></div><h1 class="manga-detail-title">${m.title}</h1><p class="manga-detail-genre">${m.genre}</p><p class="manga-detail-desc">${m.description}</p></div></div></section>
-        <section class="reader"><h2 class="reader-title">📖 試し読み（1〜${m.pages}ページ）</h2><div class="reader-pages">${Array.from({length: m.pages}, (_, i) => `<div class="reader-page">${i + 1}ページ目<span class="reader-page-num">${i + 1}/${m.pages}</span></div>`).join('')}</div></section>
-        <section class="cta"><div class="cta-box"><p class="cta-title">続きが気になる？</p><p class="cta-subtitle">全話読むならこちらから！</p><a href="#" class="cta-btn">📚 続きを読む</a><p class="cta-note">※ 外部サイトに移動します</p></div></section>
-        <section class="related"><h2 class="related-title">📖 同じジャンルの作品</h2><div class="related-list">${rel.map(r => `<div class="related-item" onclick="openManga(${r.id})"><div class="related-thumb">サムネ</div><p class="related-name">${r.title}</p><p class="related-rating">★ ${r.rating}</p></div>`).join('')}</div></section>
+      return `
+        <header class="detail-header">
+          <button class="back-btn" onclick="goHome()">←</button>
+          <span class="detail-title">${m.title}</span>
+        </header>
+        <section class="manga-detail">
+          <div class="manga-detail-inner">
+            <div class="manga-cover">表紙</div>
+            <div class="manga-detail-info">
+              <div class="manga-detail-badges">
+                ${m.badge ? `<span class="manga-detail-badge">${m.badge}</span>` : ''}
+                <span class="manga-detail-rating">★ ${m.rating}</span>
+              </div>
+              <h1 class="manga-detail-title">${m.title}</h1>
+              <p class="manga-detail-genre">${m.genre}</p>
+              <p class="manga-detail-desc">${m.description}</p>
+            </div>
+          </div>
+        </section>
+        <section class="reader">
+          <div class="reader-pages">
+            ${Array.from({length: m.pages}, (_, i) => `<div class="reader-page">${i + 1}ページ目<span class="reader-page-num">${i + 1}/${m.pages}</span></div>`).join('')}
+          </div>
+        </section>
+        <section class="cta">
+          <div class="cta-box">
+            <p class="cta-title">続きが気になる？</p>
+            <p class="cta-subtitle">全話読むならこちらから！</p>
+            <a href="#" class="cta-btn">📚 続きを読む</a>
+            <p class="cta-note">※ 外部サイトに移動します</p>
+          </div>
+        </section>
+        <section class="related">
+          <h2 class="related-title">📖 同じジャンルの作品</h2>
+          <div class="related-list">${rel.map(r => `<div class="related-item" onclick="openManga(${r.id})"><div class="related-thumb">サムネ</div><p class="related-name">${r.title}</p><p class="related-rating">★ ${r.rating}</p></div>`).join('')}</div>
+        </section>
         <footer class="footer"><p>© 2026 MangaHub</p></footer>`;
     }
 
     function renderAdmin() {
-      return `<header class="header admin-header"><div class="logo"><div class="logo-icon" style="font-size:14px">⚙️</div><span class="logo-text">管理画面</span></div><button class="btn" onclick="goHome()">プレビュー</button></header>
+      return `<header class="header admin-header"><div class="logo"><div class="logo-icon" style="font-size:14px">⚙️</div><span class="logo-text">管理画面</span></div><div style="display:flex;gap:8px"><button class="btn" onclick="goHome()">サイト</button><button class="admin-logout" onclick="logout()">ログアウト</button></div></header>
         <div class="admin-tabs"><button class="admin-tab ${adminTab==='site'?'active':''}" onclick="setTab('site')">サイト</button><button class="admin-tab ${adminTab==='works'?'active':''}" onclick="setTab('works')">作品</button><button class="admin-tab ${adminTab==='diagnosis'?'active':''}" onclick="setTab('diagnosis')">診断</button><button class="admin-tab ${adminTab==='x'?'active':''}" onclick="setTab('x')">X投稿</button></div>
         <section class="admin-section">
           ${adminTab==='site'?`<div class="admin-group"><h3 class="admin-group-title"><span>●</span> サイト基本情報</h3><div class="admin-card"><div class="admin-field"><label class="admin-label">サイト名</label><input type="text" class="admin-input" value="MangaHub"></div><div class="admin-field"><label class="admin-label">メインタイトル</label><input type="text" class="admin-input" value="気になる漫画を試し読み"></div></div></div><button class="admin-save">変更を保存</button>`:''}
           ${adminTab==='works'?`<button style="width:100%;background:#111;border:2px dashed #333;color:#fff;padding:16px;border-radius:12px;margin-bottom:20px">+ 新規作品を追加</button>${mangaList.slice(0,4).map(m=>`<div class="admin-card" style="margin-bottom:12px"><div style="display:flex;gap:12px"><div style="width:60px;height:80px;background:#333;border-radius:6px"></div><div><span style="font-weight:700">${m.title}</span><p style="font-size:11px;opacity:0.6">${m.genre}</p><button style="background:#222;border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;margin-top:8px">編集</button></div></div></div>`).join('')}`:''}
-          ${adminTab==='diagnosis'?`<div class="admin-group"><h3 class="admin-group-title"><span>🔑</span> API設定</h3><div class="admin-card admin-api-card"><div class="admin-api-buttons"><button class="admin-api-btn active">GPT</button><button class="admin-api-btn">Claude</button><button class="admin-api-btn">Gemini</button></div><div class="admin-field"><label class="admin-label">APIキー</label><input type="password" class="admin-input" placeholder="sk-..."></div></div></div><div class="admin-group"><h3 class="admin-group-title"><span>❓</span> 診断設定（5問×4選択肢）</h3>${diagnosisQuestions.slice(0,2).map((q,i)=>`<div class="admin-card" style="margin-bottom:10px"><p style="font-size:12px;font-weight:600">Q${i+1}: ${q.question}</p></div>`).join('')}<p style="text-align:center;opacity:0.5;font-size:11px">他3問...</p></div><button class="admin-save">変更を保存</button>`:''}
-          ${adminTab==='x'?`<div class="admin-group"><h3 class="admin-group-title"><span>●</span> アカウント連携</h3><div class="admin-card"><div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px">𝕏</div><div><p style="font-weight:600">@manga_hub</p><p style="font-size:11px;opacity:0.6">連携済み</p></div></div></div></div><div class="admin-group"><h3 class="admin-group-title"><span>●</span> 新規投稿</h3><div class="admin-card"><div class="admin-field"><label class="admin-label">投稿内容</label><textarea class="admin-textarea">📚 新作漫画のご紹介！\n\n#漫画 #試し読み</textarea></div><button style="width:100%;background:#e63946;color:#fff;border:none;padding:14px;border-radius:10px;font-weight:700">今すぐ投稿</button></div></div>`:''}
+          ${adminTab==='diagnosis'?`<div class="admin-group"><h3 class="admin-group-title"><span>🔑</span> API設定</h3><div class="admin-card admin-api-card"><div class="admin-api-buttons"><button class="admin-api-btn active">GPT</button><button class="admin-api-btn">Claude</button><button class="admin-api-btn">Gemini</button></div><div class="admin-field"><label class="admin-label">APIキー</label><input type="password" class="admin-input" placeholder="sk-..."></div></div></div><button class="admin-save">変更を保存</button>`:''}
+          ${adminTab==='x'?`<div class="admin-group"><h3 class="admin-group-title"><span>●</span> アカウント連携</h3><div class="admin-card"><div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px">𝕏</div><div><p style="font-weight:600">@manga_hub</p><p style="font-size:11px;opacity:0.6">連携済み</p></div></div></div></div>`:''}
         </section>`;
     }
 
+    function tryLogin() {
+      const id = document.getElementById('loginId').value;
+      const pass = document.getElementById('loginPass').value;
+      if (id === ADMIN_ID && pass === ADMIN_PASS) { isAdminLoggedIn = true; showLoginError = false; currentPage = 'admin'; }
+      else showLoginError = true;
+      render();
+    }
+
+    function logout() { isAdminLoggedIn = false; window.location.hash = ''; currentPage = 'home'; render(); }
     function startDiag() { diagStep = 0; render(); }
     function answer(t) { diagAnswers.push(t); if (diagStep < 4) diagStep++; else { resultType = calculateResult(); showResult = true; } render(); }
     function resetDiag() { diagStep = -1; diagAnswers = []; showResult = false; resultType = null; render(); }
     function openManga(id) { selectedManga = mangaList.find(m => m.id === id); currentPage = 'detail'; window.scrollTo(0, 0); render(); }
-    function goHome() { currentPage = 'home'; selectedManga = null; render(); }
-    function goAdmin() { currentPage = 'admin'; render(); }
+    function goHome() { window.location.hash = ''; currentPage = 'home'; selectedManga = null; render(); }
     function setTab(t) { adminTab = t; render(); }
 
-    render();
+    window.addEventListener('hashchange', checkHash);
+    checkHash();
   </script>
 </body>
 </html>
