@@ -157,12 +157,12 @@
     ];
     
     let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A' },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B' },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！', type: 'C' },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界ファンタジー', type: 'D' },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'テンポ抜群のラブコメ', type: 'E' },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '駆け引きラブ', type: 'F' },
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A', imageFolder: null },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B', imageFolder: null },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！', type: 'C', imageFolder: null },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界ファンタジー', type: 'D', imageFolder: null },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'テンポ抜群のラブコメ', type: 'E', imageFolder: null },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '駆け引きラブ', type: 'F', imageFolder: null },
     ];
     
     let xAccounts = [
@@ -329,15 +329,23 @@
           <button class="btn" onclick="addNewManga()">+ 新規作品を追加</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(400px, 1fr));gap:16px">
-        ${mangaList.map((m, idx) => `
+        ${mangaList.map((m, idx) => {
+          const folderImages = m.imageFolder && imageFolders[m.imageFolder] ? imageFolders[m.imageFolder] : [];
+          const thumbUrl = folderImages.length > 0 ? folderImages[0].dataUrl : null;
+          return `
           <div class="admin-card" style="position:relative">
             <div style="position:absolute;top:-8px;left:-8px;width:32px;height:32px;background:#e63946;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${idx + 1}</div>
             <div style="display:flex;gap:14px">
-              <div style="width:70px;height:90px;background:#333;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0.5">No.${idx + 1}</div>
+              <div style="width:70px;height:90px;background:#333;border-radius:8px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center">
+                ${thumbUrl ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover">` : `<span style="font-size:11px;opacity:0.5">No.${idx + 1}</span>`}
+              </div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:15px;font-weight:700;margin-bottom:6px">${m.title}</div>
                 <div style="font-size:12px;opacity:0.6;margin-bottom:4px">${m.genre} | タイプ: ${m.type} | ★${m.rating}</div>
-                <div style="font-size:11px;opacity:0.4;margin-bottom:8px">作品ID: ${m.id}</div>
+                <div style="font-size:11px;opacity:0.4;margin-bottom:8px">
+                  ID: ${m.id} | URL: <span style="color:#e63946;cursor:pointer" onclick="window.open('index.html?id=${m.id}','_blank')">?id=${m.id}</span>
+                  ${m.imageFolder ? ` | 📁 ${m.imageFolder} (${folderImages.length}枚)` : ' | 📁 未設定'}
+                </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
                   ${m.badge ? `<span style="background:${getBadgeColor(m.badge)};padding:4px 10px;border-radius:6px;font-size:11px">${m.badge}</span>` : ''}
                   ${(m.tags || []).map(tagId => {
@@ -352,7 +360,7 @@
               </div>
             </div>
           </div>
-        `).join('')}
+        `}).join('')}
         </div>`;
     }
     
@@ -408,9 +416,13 @@
     
     function renderEditModal() {
       const m = editingManga;
+      const folderNames = Object.keys(imageFolders);
+      const selectedFolder = m.imageFolder;
+      const folderImages = selectedFolder && imageFolders[selectedFolder] ? imageFolders[selectedFolder] : [];
+      
       return `
         <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;overflow-y:auto">
-          <div style="max-width:600px;margin:40px auto;padding:24px;background:#111;border-radius:16px;border:1px solid #333">
+          <div style="max-width:700px;margin:40px auto;padding:24px;background:#111;border-radius:16px;border:1px solid #333">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
               <h3 style="font-size:18px;font-weight:700">作品を編集</h3>
               <button onclick="closeEditModal()" style="background:none;border:none;color:#fff;font-size:28px;cursor:pointer">&times;</button>
@@ -469,12 +481,44 @@
               </div>
             </div>
             
+            <div class="admin-field">
+              <label class="admin-label">📁 画像フォルダ（1枚目=サムネ、2枚目以降=サンプル）</label>
+              <select id="editImageFolder" class="admin-select" style="margin-top:8px" onchange="selectImageFolder(this.value)">
+                <option value="">なし</option>
+                ${folderNames.map(f => `<option value="${f}" ${selectedFolder===f?'selected':''}>${f} (${imageFolders[f].length}枚)</option>`).join('')}
+              </select>
+              ${folderImages.length > 0 ? `
+                <div style="margin-top:12px">
+                  <div style="font-size:11px;opacity:0.6;margin-bottom:8px">プレビュー（1枚目がサムネイル）</div>
+                  <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
+                    ${folderImages.slice(0, 10).map((img, i) => `
+                      <div style="flex-shrink:0;position:relative">
+                        <img src="${img.dataUrl}" style="width:${i===0?'100px':'70px'};height:${i===0?'140px':'100px'};object-fit:cover;border-radius:8px;border:${i===0?'3px solid #e63946':'1px solid #333'}">
+                        <div style="position:absolute;top:4px;left:4px;background:${i===0?'#e63946':'#333'};padding:2px 6px;border-radius:4px;font-size:9px">${i===0?'サムネ':i}</div>
+                      </div>
+                    `).join('')}
+                    ${folderImages.length > 10 ? `<div style="flex-shrink:0;width:70px;height:100px;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px">+${folderImages.length - 10}</div>` : ''}
+                  </div>
+                </div>
+              ` : folderNames.length === 0 ? `
+                <div style="margin-top:12px;padding:16px;background:#1a1a1a;border-radius:8px;text-align:center">
+                  <p style="font-size:12px;opacity:0.6">画像フォルダがありません</p>
+                  <p style="font-size:11px;opacity:0.4;margin-top:4px">X運用 → 画像取得 で画像を取得してください</p>
+                </div>
+              ` : ''}
+            </div>
+            
             <div style="display:flex;gap:12px;margin-top:24px">
               <button class="btn btn-secondary" style="flex:1;padding:14px" onclick="closeEditModal()">キャンセル</button>
               <button class="btn" style="flex:2;padding:14px" onclick="saveEditManga()">保存</button>
             </div>
           </div>
         </div>`;
+    }
+    
+    function selectImageFolder(folderName) {
+      editingManga.imageFolder = folderName || null;
+      render();
     }
     
     // タグ・バッジ管理関数
@@ -565,7 +609,8 @@
         pages: parseInt(document.getElementById('editPages').value) || 5,
         description: document.getElementById('editDesc').value.trim(),
         badge: editingManga.badge,
-        tags: editingManga.tags
+        tags: editingManga.tags,
+        imageFolder: editingManga.imageFolder
       };
       
       saveData(STORAGE_KEYS.mangaList, mangaList);
