@@ -142,7 +142,7 @@
     };
     
     // デフォルトデータ
-    let siteSettings = { siteName: 'MangaHub', mainTitle: '気になる漫画を試し読み', badge: '🔥 今週の注目' };
+    let siteSettings = { siteName: 'MangaHub', mainTitle: '気になる漫画を試し読み', badge: '今週の注目' };
     
     let tagsMaster = [
       { id: 1, name: 'ラブコメ', color: '#ec4899' },
@@ -195,34 +195,34 @@
 
     const diagnosisQuestions = [
       { question: '見た目で選ぶなら？', options: [
-        { emoji: '🌿', text: '清楚・ナチュラル系', type: 'A' },
-        { emoji: '💄', text: 'ギャル・派手め系', type: 'E' },
-        { emoji: '🎀', text: 'かわいい・あざとい系', type: 'C' },
-        { emoji: '👠', text: 'グラマラス・色気強め', type: 'B' },
+        { text: '清楚・ナチュラル系', type: 'A' },
+        { text: 'ギャル・派手め系', type: 'E' },
+        { text: 'かわいい・あざとい系', type: 'C' },
+        { text: 'グラマラス・色気強め', type: 'B' },
       ]},
       { question: '年齢感で刺さるのは？', options: [
-        { emoji: '😊', text: '同世代っぽい距離感', type: 'A' },
-        { emoji: '✨', text: 'ちょい年上の余裕', type: 'B' },
-        { emoji: '🍷', text: '大人っぽい包容力', type: 'B' },
-        { emoji: '🔥', text: '熟れた魅力のある雰囲気', type: 'F' },
+        { text: '同世代っぽい距離感', type: 'A' },
+        { text: 'ちょい年上の余裕', type: 'B' },
+        { text: '大人っぽい包容力', type: 'B' },
+        { text: '熟れた魅力のある雰囲気', type: 'F' },
       ]},
       { question: 'どんな"癖"が刺さる？', options: [
-        { emoji: '😈', text: '小悪魔・翻弄されたい', type: 'F' },
-        { emoji: '🤍', text: '一途・尽くしてくれる', type: 'A' },
-        { emoji: '🎭', text: 'コスプレ・変身ギャップ', type: 'C' },
-        { emoji: '🦋', text: '人外・非日常の魅力', type: 'D' },
+        { text: '小悪魔・翻弄されたい', type: 'F' },
+        { text: '一途・尽くしてくれる', type: 'A' },
+        { text: 'コスプレ・変身ギャップ', type: 'C' },
+        { text: '人外・非日常の魅力', type: 'D' },
       ]},
       { question: 'プレイ内容で近いのは？', options: [
-        { emoji: '💕', text: '甘々いちゃラブ', type: 'A' },
-        { emoji: '🖤', text: '焦らしと駆け引き', type: 'F' },
-        { emoji: '🙌', text: 'ご奉仕たっぷり', type: 'C' },
-        { emoji: '⛓', text: 'ハードめで刺激重視', type: 'F' },
+        { text: '甘々いちゃラブ', type: 'A' },
+        { text: '焦らしと駆け引き', type: 'F' },
+        { text: 'ご奉仕たっぷり', type: 'C' },
+        { text: 'ハードめで刺激重視', type: 'F' },
       ]},
       { question: '世界観で選ぶなら？', options: [
-        { emoji: '🏠', text: '日常・恋人感のある世界', type: 'A' },
-        { emoji: '🏢', text: '大人の現実感がある関係', type: 'B' },
-        { emoji: '🎪', text: '衣装やシチュ映えする世界', type: 'C' },
-        { emoji: '🌌', text: '異世界・ファンタジー世界', type: 'D' },
+        { text: '日常・恋人感のある世界', type: 'A' },
+        { text: '大人の現実感がある関係', type: 'B' },
+        { text: '衣装やシチュ映えする世界', type: 'C' },
+        { text: '異世界・ファンタジー世界', type: 'D' },
       ]},
     ];
 
@@ -288,7 +288,7 @@
             <span class="logo-text">${siteSettings.siteName}</span>
           </div>
           <div class="search-box">
-            <span style="opacity:0.5">🔍</span>
+            <svg style="width:14px;height:14px;opacity:0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input type="text" class="search-input" placeholder="検索">
           </div>
         </header>
@@ -301,17 +301,14 @@
         
         <section class="diagnosis">
           <div class="diagnosis-box">
-            <div class="diagnosis-header">
-              <div class="diagnosis-icon">🤖</div>
-              <span class="diagnosis-title">おすすめ診断</span>
-              <span class="diagnosis-step ${showResult ? 'complete' : ''}">${showResult ? '完了!' : diagStep >= 0 ? 'Q' + (diagStep + 1) + '/5' : ''}</span>
-            </div>
+            <img src="https://urayomi.live/images/diagnosis-header.png" alt="AI診断" style="width:100%;border-radius:8px;margin-bottom:12px">
+            <span class="diagnosis-step ${showResult ? 'complete' : ''}">${showResult ? '完了' : diagStep >= 0 ? 'Q' + (diagStep + 1) + '/5' : ''}</span>
             ${showResult ? renderResult() : diagStep >= 0 ? renderQuestion() : renderStart()}
           </div>
         </section>
         
         <section class="section">
-          <h2 class="section-title">📖 人気作品</h2>
+          <h2 class="section-title">人気作品</h2>
           <div class="manga-grid">
             ${(() => {
               const totalPages = Math.ceil(mangaList.length / ITEMS_PER_PAGE);
@@ -387,8 +384,8 @@
     function renderStart() {
       return `
         <div style="text-align:center;padding:10px 0">
-          <p style="font-size:12px;opacity:0.7;margin-bottom:12px">5つの質問であなたにピッタリの作品を診断！</p>
-          <button class="btn-start" onclick="startDiag()">🔍 診断してみる</button>
+          <p style="font-size:12px;opacity:0.7;margin-bottom:12px">5つの質問であなたにピッタリの作品を診断</p>
+          <button class="btn-start" onclick="startDiag()">診断スタート</button>
         </div>`;
     }
 
@@ -399,7 +396,6 @@
         <div class="diagnosis-options">
           ${q.options.map(o => `
             <button class="diagnosis-option" onclick="answer('${o.type}')">
-              <span class="diagnosis-option-emoji">${o.emoji}</span>
               <span class="diagnosis-option-text">${o.text}</span>
             </button>
           `).join('')}
@@ -411,11 +407,11 @@
       const rec = mangaList.filter(m => m.type === resultType).slice(0, 2);
       return `
         <div class="diagnosis-result">
-          <div class="diagnosis-result-type">✨ ${r.title}</div>
+          <div class="diagnosis-result-type">${r.title}</div>
           <div class="diagnosis-result-desc">${r.description}</div>
           <div class="diagnosis-result-tags">${r.tags.map(t => `<span class="diagnosis-result-tag">#${t}</span>`).join('')}</div>
         </div>
-        <p style="font-size:11px;opacity:0.6;margin-bottom:8px;text-align:center">🎯 あなたへのおすすめ</p>
+        <p style="font-size:11px;opacity:0.6;margin-bottom:8px;text-align:center">あなたへのおすすめ</p>
         <div class="diagnosis-recommend">
           ${rec.map(m => `
             <div class="diagnosis-recommend-item" onclick="openManga(${m.id})">
@@ -426,7 +422,7 @@
             </div>
           `).join('')}
         </div>
-        <button class="btn-reset" onclick="resetDiag()">🔄 もう一回診断する</button>`;
+        <button class="btn-reset" onclick="resetDiag()">もう一度診断する</button>`;
     }
 
     function renderDetail() {
@@ -486,11 +482,11 @@
         <section class="rating-section" style="padding:16px;border-bottom:1px solid #222">
           <p style="font-size:12px;text-align:center;margin-bottom:12px">この作品はいかがでしたか？</p>
           <div style="display:flex;justify-content:center;gap:24px">
-            <button onclick="rateManga(${m.id}, 'like')" style="background:#22c55e;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:8px">
-              👍 <span style="font-size:13px">${m.likes || 0}</span>
+            <button onclick="rateManga(${m.id}, 'like')" style="background:#22c55e;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px">
+              GOOD <span style="font-size:13px">${m.likes || 0}</span>
             </button>
-            <button onclick="rateManga(${m.id}, 'dislike')" style="background:#ef4444;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:8px">
-              👎 <span style="font-size:13px">${m.dislikes || 0}</span>
+            <button onclick="rateManga(${m.id}, 'dislike')" style="background:#ef4444;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px">
+              BAD <span style="font-size:13px">${m.dislikes || 0}</span>
             </button>
           </div>
         </section>
@@ -499,13 +495,13 @@
           <div class="cta-box">
             <p class="cta-title">続きが気になる？</p>
             <p class="cta-subtitle">全話読むならこちらから！</p>
-            <a href="#" class="cta-btn">📚 続きを読む</a>
+            <a href="#" class="cta-btn">続きを読む</a>
             <p class="cta-note">※ 外部サイトに移動します</p>
           </div>
         </section>
         
         <section class="related">
-          <h2 class="related-title">✨ オススメの作品</h2>
+          <h2 class="related-title">オススメの作品</h2>
           <div class="related-list">
             ${recommended.map(r => {
               const rThumb = getMangaThumbnail(r);
