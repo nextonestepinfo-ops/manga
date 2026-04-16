@@ -7,101 +7,106 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Noto Sans JP', sans-serif; background: #000; color: #fff; display: flex; justify-content: center; }
-    #app { width: 100%; max-width: 390px; min-height: 100vh; background: #000; }
+    body { font-family: 'Noto Sans JP', sans-serif; background: #000; color: #fff; }
+    #app { width: 100%; min-height: 100vh; background: #000; }
     button, input, textarea, select { font-family: inherit; outline: none; }
     
-    .btn { background: #e63946; color: #fff; border: none; padding: 8px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn { background: #e63946; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
     .btn:hover { opacity: 0.9; }
     .btn-secondary { background: #333; }
-    .btn-small { padding: 6px 10px; font-size: 10px; }
+    .btn-small { padding: 8px 14px; font-size: 12px; }
     .btn-outline { background: transparent; border: 1px solid #333; color: #fff; }
     .btn-danger { background: #dc2626; }
     
     /* Login */
     .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; display: flex; align-items: center; justify-content: center; }
-    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px 24px; width: 90%; max-width: 320px; }
-    .login-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 24px; }
-    .login-field { margin-bottom: 16px; }
-    .login-label { font-size: 11px; opacity: 0.6; display: block; margin-bottom: 6px; }
-    .login-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px 32px; width: 90%; max-width: 400px; }
+    .login-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 28px; }
+    .login-field { margin-bottom: 18px; }
+    .login-label { font-size: 12px; opacity: 0.6; display: block; margin-bottom: 8px; }
+    .login-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 14px; color: #fff; font-size: 15px; }
     .login-input:focus { border-color: #e63946; }
-    .login-btn { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-    .login-error { color: #e63946; font-size: 12px; text-align: center; margin-top: 12px; }
+    .login-btn { width: 100%; background: #e63946; color: #fff; border: none; padding: 16px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .login-error { color: #e63946; font-size: 13px; text-align: center; margin-top: 14px; }
     
-    /* Admin */
-    .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #111; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100; }
-    .admin-logo { display: flex; align-items: center; gap: 8px; }
-    .admin-logo-icon { width: 32px; height: 32px; background: #e63946; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-    .admin-logo-text { font-size: 14px; font-weight: 700; }
-    .admin-logout { background: #333; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; }
+    /* Admin - PC Full Width */
+    .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: #111; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100; }
+    .admin-logo { display: flex; align-items: center; gap: 12px; }
+    .admin-logo-icon { width: 40px; height: 40px; background: #e63946; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .admin-logo-text { font-size: 18px; font-weight: 700; }
+    .admin-logout { background: #333; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .admin-logout:hover { background: #444; }
     
-    .admin-tabs { display: flex; border-bottom: 1px solid #222; background: #111; }
-    .admin-tab { flex: 1; padding: 12px; background: transparent; border: none; color: #fff; opacity: 0.6; font-size: 11px; cursor: pointer; text-align: center; }
-    .admin-tab.active { color: #e63946; opacity: 1; font-weight: 600; border-bottom: 2px solid #e63946; }
+    .admin-tabs { display: flex; border-bottom: 1px solid #222; background: #111; padding: 0 32px; }
+    .admin-tab { padding: 16px 40px; background: transparent; border: none; color: #fff; opacity: 0.6; font-size: 15px; cursor: pointer; text-align: center; }
+    .admin-tab.active { color: #e63946; opacity: 1; font-weight: 600; border-bottom: 3px solid #e63946; }
+    .admin-tab:hover { opacity: 0.8; }
     
-    .admin-section { padding: 16px; }
-    .admin-group { margin-bottom: 20px; }
-    .admin-group-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .admin-section { padding: 32px; max-width: 1600px; margin: 0 auto; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 32px; }
+    .admin-group { margin-bottom: 28px; }
+    .admin-group-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
     .admin-group-title span { color: #e63946; }
-    .admin-card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-    .admin-field { margin-bottom: 10px; }
-    .admin-label { font-size: 10px; opacity: 0.5; display: block; margin-bottom: 4px; }
-    .admin-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 6px; padding: 10px; color: #fff; font-size: 12px; }
+    .admin-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+    .admin-field { margin-bottom: 14px; }
+    .admin-label { font-size: 12px; opacity: 0.5; display: block; margin-bottom: 8px; }
+    .admin-input { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 14px; color: #fff; font-size: 14px; }
     .admin-input:focus { border-color: #e63946; }
-    .admin-textarea { width: 100%; background: #000; border: 1px solid #333; border-radius: 6px; padding: 10px; color: #fff; font-size: 11px; resize: none; height: 80px; line-height: 1.5; }
-    .admin-select { width: 100%; background: #000; border: 1px solid #333; border-radius: 6px; padding: 10px; color: #fff; font-size: 12px; }
-    .admin-save { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .admin-textarea { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 14px; color: #fff; font-size: 13px; resize: vertical; min-height: 100px; line-height: 1.6; }
+    .admin-select { width: 100%; background: #000; border: 1px solid #333; border-radius: 8px; padding: 14px; color: #fff; font-size: 14px; }
+    .admin-save { width: 100%; background: #e63946; color: #fff; border: none; padding: 16px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 15px; }
+    .admin-save:hover { background: #d62839; }
     
-    /* X Editor */
-    .x-subtabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
-    .x-subtab { background: #222; border: none; color: #fff; opacity: 0.6; padding: 8px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; }
+    /* X Editor - PC */
+    .x-subtabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .x-subtab { background: #222; border: none; color: #fff; opacity: 0.6; padding: 12px 20px; border-radius: 8px; font-size: 13px; cursor: pointer; }
     .x-subtab.active { background: #e63946; opacity: 1; }
+    .x-subtab:hover { opacity: 0.8; }
     
-    .account-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+    .account-item { display: flex; align-items: center; gap: 14px; padding: 14px; background: #000; border: 1px solid #333; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
     .account-item.active { border-color: #e63946; }
-    .account-avatar { width: 36px; height: 36px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .account-avatar { width: 44px; height: 44px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     .account-info { flex: 1; }
-    .account-name { font-size: 12px; font-weight: 600; }
-    .account-handle { font-size: 10px; opacity: 0.5; }
-    .account-type { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #333; }
+    .account-name { font-size: 14px; font-weight: 600; }
+    .account-handle { font-size: 12px; opacity: 0.5; }
+    .account-type { font-size: 11px; padding: 4px 10px; border-radius: 6px; background: #333; }
     .account-type.main { background: #e63946; }
     .account-type.sub { background: #1d4ed8; }
     
-    .tree-post { background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 8px; }
-    .tree-post-header { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid #222; }
-    .tree-post-num { width: 24px; height: 24px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-    .tree-post-type { font-size: 10px; opacity: 0.6; }
-    .tree-post-body { padding: 10px; }
-    .tree-post-images { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
-    .tree-post-img { width: 50px; height: 50px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 1px dashed #444; }
+    .tree-post { background: #000; border: 1px solid #333; border-radius: 10px; margin-bottom: 12px; }
+    .tree-post-header { display: flex; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #222; }
+    .tree-post-num { width: 28px; height: 28px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+    .tree-post-type { font-size: 12px; opacity: 0.6; }
+    .tree-post-body { padding: 14px; }
+    .tree-post-images { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .tree-post-img { width: 70px; height: 70px; background: #222; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; border: 2px dashed #444; }
     
-    .template-item { background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-    .template-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-    .template-preview { font-size: 10px; opacity: 0.6; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .template-meta { display: flex; gap: 8px; margin-top: 8px; }
+    .template-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .template-name { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .template-preview { font-size: 12px; opacity: 0.6; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .template-meta { display: flex; gap: 10px; margin-top: 12px; }
     
-    .history-item { background: #000; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .history-date { font-size: 10px; opacity: 0.5; }
-    .history-status { font-size: 9px; padding: 2px 6px; border-radius: 4px; }
+    .history-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .history-date { font-size: 12px; opacity: 0.5; }
+    .history-status { font-size: 11px; padding: 4px 10px; border-radius: 6px; }
     .history-status.sent { background: #22c55e; }
     .history-status.scheduled { background: #f59e0b; }
-    .history-content { font-size: 11px; line-height: 1.5; opacity: 0.8; }
+    .history-content { font-size: 13px; line-height: 1.6; opacity: 0.8; }
     
-    .schedule-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 8px; }
-    .schedule-time { font-size: 11px; font-weight: 600; min-width: 80px; }
-    .schedule-content { flex: 1; font-size: 10px; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .schedule-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: #000; border: 1px solid #333; border-radius: 10px; margin-bottom: 12px; }
+    .schedule-time { font-size: 13px; font-weight: 600; min-width: 100px; }
+    .schedule-content { flex: 1; font-size: 12px; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     
-    .image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .image-item { aspect-ratio: 1; background: #1a1a1a; border-radius: 6px; position: relative; cursor: pointer; overflow: hidden; border: 2px solid transparent; }
+    .image-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .image-item { aspect-ratio: 1; background: #1a1a1a; border-radius: 10px; position: relative; cursor: pointer; overflow: hidden; border: 3px solid transparent; }
     .image-item.selected { border-color: #e63946; }
     .image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .image-item-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); color: #888; font-size: 9px; text-align: center; padding: 4px; }
-    .image-item-order { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
-    .image-item-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 3px 4px; font-size: 8px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+    .image-item-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); color: #888; font-size: 11px; text-align: center; padding: 8px; }
+    .image-item-order { position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+    .image-item-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 6px 8px; font-size: 10px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
     
-    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 12px; font-weight: 600; z-index: 1000; display: none; }
+    .toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #fff; padding: 16px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 1000; display: none; }
     .toast.show { display: block; animation: fadeInOut 2s ease; }
     @keyframes fadeInOut { 0% { opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
   </style>
@@ -568,6 +573,15 @@
           <div id="scrapeProgress" style="margin-top:12px"></div>
         </div>
         <div class="admin-group">
+          <h3 class="admin-group-title"><span>📋</span> 手動HTML入力</h3>
+          <div class="admin-card">
+            <p style="font-size:10px;opacity:0.6;margin-bottom:8px">プロキシ制限時はHTMLをペーストして画像URL抽出</p>
+            <textarea id="manualHtml" class="admin-textarea" style="height:80px;font-size:10px" placeholder="ページのHTMLをここにペースト..."></textarea>
+            <input type="text" id="manualFolder" class="admin-input" style="margin-top:6px;font-size:11px" placeholder="フォルダ名">
+            <button class="btn btn-secondary" style="margin-top:8px" onclick="extractFromHtml()">画像URL抽出</button>
+          </div>
+        </div>
+        <div class="admin-group">
           <h3 class="admin-group-title"><span>📁</span> 取得済みフォルダ</h3>
           <div id="folderList">
             ${renderFolderList()}
@@ -618,6 +632,99 @@
     function toggleFolderView(folder) {
       const el = document.getElementById('folder_' + folder.replace(/[^a-zA-Z0-9]/g, '_'));
       if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    // 手動HTMLから画像URL抽出
+    async function extractFromHtml() {
+      const html = document.getElementById('manualHtml').value;
+      const folder = document.getElementById('manualFolder').value.trim() || 'manual_' + Date.now();
+      
+      if (!html || html.length < 100) {
+        showToast('HTMLを入力してください');
+        return;
+      }
+      
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      const imageUrls = [];
+      doc.querySelectorAll('img').forEach(img => {
+        const attrs = ['src', 'data-src', 'data-lazy-src', 'data-original'];
+        for (const attr of attrs) {
+          let src = img.getAttribute(attr);
+          if (src && src.startsWith('http') && !src.includes('banner') && !src.includes('logo')) {
+            imageUrls.push(src);
+            break;
+          }
+        }
+      });
+      
+      // aタグのhrefも確認（画像リンク）
+      doc.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href');
+        if (href && /\.(jpg|jpeg|png|gif|webp)$/i.test(href)) {
+          if (href.startsWith('http')) imageUrls.push(href);
+        }
+      });
+      
+      const uniqueUrls = [...new Set(imageUrls)];
+      
+      if (uniqueUrls.length === 0) {
+        showToast('画像URLが見つかりません');
+        return;
+      }
+      
+      showToast(`${uniqueUrls.length}個のURLを検出`);
+      
+      // プロキシ経由でダウンロード
+      const proxies = [
+        u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+        u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+      ];
+      
+      const downloadedImages = [];
+      
+      for (let i = 0; i < uniqueUrls.length; i++) {
+        const imgUrl = uniqueUrls[i];
+        showToast(`ダウンロード中 ${i + 1}/${uniqueUrls.length}`);
+        
+        let blob = null;
+        for (const makeProxy of proxies) {
+          try {
+            const response = await fetch(makeProxy(imgUrl));
+            if (!response.ok) continue;
+            const b = await response.blob();
+            if (b.size >= 3000 && b.type.startsWith('image/')) {
+              blob = b;
+              break;
+            }
+          } catch (e) { continue; }
+        }
+        
+        if (blob) {
+          const dataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+          downloadedImages.push({
+            name: `${folder}_${String(downloadedImages.length + 1).padStart(3, '0')}.jpg`,
+            dataUrl
+          });
+        }
+      }
+      
+      if (downloadedImages.length > 0) {
+        imageFolders[folder] = downloadedImages;
+        localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+        document.getElementById('folderList').innerHTML = renderFolderList();
+        showToast(`${downloadedImages.length}枚を保存`);
+        document.getElementById('manualHtml').value = '';
+        document.getElementById('manualFolder').value = '';
+      } else {
+        showToast('ダウンロード失敗');
+      }
     }
     
     function downloadFolderImages(folderName) {
@@ -896,7 +1003,7 @@
           const url = urlInput.value.trim();
           const folder = folderInput.value.trim();
           if (url.startsWith('http')) {
-            validUrls.push({ url, folder: folder || 'folder_' + Date.now() });
+            validUrls.push({ url, folder: folder || 'images_' + Date.now() });
           }
         }
       });
@@ -911,9 +1018,13 @@
       
       btn.disabled = true;
       
+      // 複数のプロキシを用意（順番に試行）
       const proxies = [
-        u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
         u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+        u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+        u => `https://thingproxy.freeboard.io/fetch/${u}`,
+        u => `https://cors-anywhere.herokuapp.com/${u}`,
       ];
       
       let totalDownloaded = 0;
@@ -926,14 +1037,11 @@
         progress.innerHTML = `
           <div class="admin-card" style="border-color:#e63946">
             <div style="font-size:12px;font-weight:600;margin-bottom:8px">📥 ${folder}</div>
-            <div style="font-size:11px;opacity:0.7">URL ${urlIdx + 1}/${validUrls.length}</div>
-            <div style="background:#333;height:6px;border-radius:3px;margin-top:8px">
-              <div id="pbar" style="background:#e63946;height:100%;width:0%;border-radius:3px"></div>
-            </div>
-            <div id="ptext" style="font-size:10px;opacity:0.5;margin-top:4px">準備中...</div>
+            <div id="ptext" style="font-size:10px;opacity:0.7">ページ取得中...</div>
           </div>`;
         
         let imageUrls = [];
+        let debugInfo = '';
         
         if (url.includes('dlsite.com')) {
           const rjMatch = url.match(/RJ(\d+)/i);
@@ -950,44 +1058,110 @@
             for (let i = 1; i <= 15; i++) {
               imageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_smp${i}.jpg`);
             }
+            debugInfo = `DLsite: ${rjId}, ${imageUrls.length}個のURL生成`;
           }
         } else {
-          const pt = document.getElementById('ptext');
-          if (pt) pt.textContent = 'ページ解析中...';
+          // 他サイト: HTMLを取得して画像URLを抽出
+          let html = null;
+          let usedProxy = '';
           
           for (const makeProxy of proxies) {
             try {
-              const response = await fetch(makeProxy(url));
-              if (!response.ok) continue;
-              const html = await response.text();
-              
-              const parser = new DOMParser();
-              const doc = parser.parseFromString(html, 'text/html');
-              const baseUrl = new URL(url);
-              const urlNumMatch = url.match(/\/(\d{3,})\/?/);
-              const urlNumber = urlNumMatch ? urlNumMatch[1] : null;
-              
-              doc.querySelectorAll('img').forEach(img => {
-                let src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
-                if (src) {
-                  if (src.startsWith('//')) src = 'https:' + src;
-                  else if (src.startsWith('/')) src = baseUrl.origin + src;
-                  if (src.startsWith('http') && (urlNumber ? src.includes(urlNumber) : true)) {
-                    imageUrls.push(src);
-                  }
-                }
-              });
-              break;
-            } catch (e) { continue; }
+              const proxyUrl = makeProxy(url);
+              const response = await fetch(proxyUrl);
+              if (response.ok) {
+                html = await response.text();
+                usedProxy = proxyUrl.split('?')[0];
+                break;
+              }
+            } catch (e) { 
+              console.log('Proxy failed:', e);
+              continue; 
+            }
           }
+          
+          if (!html) {
+            progress.innerHTML = `
+              <div class="admin-card" style="border-color:#f59e0b">
+                <p style="font-size:11px;color:#f59e0b">⚠️ ページ取得失敗</p>
+                <p style="font-size:10px;opacity:0.6;margin-top:6px">プロキシがブロックされています</p>
+                <p style="font-size:10px;opacity:0.6;margin-top:4px">→ 下の「手動HTML入力」を使ってください</p>
+                <p style="font-size:9px;opacity:0.4;margin-top:8px">1. ページをChromeで開く<br>2. F12 → Elements → html右クリック → Copy outerHTML<br>3. 下のテキストエリアにペースト</p>
+              </div>`;
+            await new Promise(r => setTimeout(r, 3000));
+            continue;
+          }
+          
+          debugInfo = `HTML取得成功 (${html.length}文字) via ${usedProxy}`;
+          document.getElementById('ptext').textContent = debugInfo;
+          
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // URLから数字を抽出
+          const urlNumMatch = url.match(/\/(\d{3,})\/?/);
+          const urlNumber = urlNumMatch ? urlNumMatch[1] : null;
+          
+          // 全imgタグから画像URLを収集
+          const allImgs = [];
+          doc.querySelectorAll('img').forEach(img => {
+            const attrs = ['src', 'data-src', 'data-lazy-src', 'data-original', 'srcset'];
+            for (const attr of attrs) {
+              let src = img.getAttribute(attr);
+              if (src) {
+                if (src.includes(',')) src = src.split(',')[0].split(' ')[0]; // srcset対応
+                if (src.startsWith('//')) src = 'https:' + src;
+                else if (src.startsWith('/')) src = new URL(url).origin + src;
+                if (src.startsWith('http')) {
+                  allImgs.push(src);
+                  break;
+                }
+              }
+            }
+          });
+          
+          debugInfo = `img要素: ${allImgs.length}個, URL数字: ${urlNumber || 'なし'}`;
+          document.getElementById('ptext').textContent = debugInfo;
+          await new Promise(r => setTimeout(r, 500));
+          
+          // フィルタリング
+          if (urlNumber) {
+            // URLの数字を含む画像のみ
+            imageUrls = allImgs.filter(src => src.includes(urlNumber));
+          }
+          
+          // それでも見つからない場合は広告以外の全画像
+          if (imageUrls.length === 0) {
+            const excludeWords = ['banner', 'ad', 'logo', 'icon', 'avatar', 'button', 'btn', 'sns', 'twitter', 'facebook'];
+            imageUrls = allImgs.filter(src => {
+              const lower = src.toLowerCase();
+              return !excludeWords.some(w => lower.includes(w));
+            });
+          }
+          
+          debugInfo = `対象画像: ${imageUrls.length}個`;
+          document.getElementById('ptext').textContent = debugInfo;
         }
         
         if (imageUrls.length === 0) {
-          const pt = document.getElementById('ptext');
-          if (pt) pt.textContent = '画像が見つかりません';
-          await new Promise(r => setTimeout(r, 1000));
+          progress.innerHTML = `
+            <div class="admin-card" style="border-color:#f59e0b">
+              <p style="font-size:11px;color:#f59e0b">⚠️ 画像が見つかりません</p>
+              <p style="font-size:10px;opacity:0.5;margin-top:4px">${debugInfo}</p>
+            </div>`;
+          await new Promise(r => setTimeout(r, 2000));
           continue;
         }
+        
+        // プログレスバー表示
+        progress.innerHTML = `
+          <div class="admin-card" style="border-color:#e63946">
+            <div style="font-size:12px;font-weight:600;margin-bottom:8px">📥 ${folder}</div>
+            <div style="background:#333;height:6px;border-radius:3px;margin:8px 0">
+              <div id="pbar" style="background:#e63946;height:100%;width:0%;border-radius:3px"></div>
+            </div>
+            <div id="ptext" style="font-size:10px;opacity:0.7">${imageUrls.length}枚をダウンロード中...</div>
+          </div>`;
         
         const downloadedImages = [];
         let consecutiveFails = 0;
@@ -1005,7 +1179,7 @@
           for (const makeProxy of proxies) {
             try {
               const controller = new AbortController();
-              const timeout = setTimeout(() => controller.abort(), 6000);
+              const timeout = setTimeout(() => controller.abort(), 8000);
               const response = await fetch(makeProxy(imgUrl), { signal: controller.signal });
               clearTimeout(timeout);
               if (!response.ok) continue;
@@ -1044,6 +1218,12 @@
           
           const pt = document.getElementById('ptext');
           if (pt) pt.textContent = `✅ ${downloadedImages.length}枚を保存`;
+        } else {
+          progress.innerHTML = `
+            <div class="admin-card" style="border-color:#f59e0b">
+              <p style="font-size:11px;color:#f59e0b">⚠️ ダウンロード失敗</p>
+              <p style="font-size:10px;opacity:0.5;margin-top:4px">画像URL: ${imageUrls.length}個検出済み</p>
+            </div>`;
         }
       }
       
@@ -1053,11 +1233,6 @@
             <p style="font-size:12px;color:#22c55e">✅ 完了: ${totalDownloaded}枚</p>
           </div>`;
         showToast(`${totalDownloaded}枚保存`);
-      } else {
-        progress.innerHTML = `
-          <div class="admin-card" style="border-color:#f59e0b">
-            <p style="font-size:11px;color:#f59e0b">⚠️ 取得失敗</p>
-          </div>`;
       }
       
       scrapeUrls = [{url:'', folder:''}];
