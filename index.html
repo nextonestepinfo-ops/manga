@@ -45,7 +45,7 @@
     .diagnosis-recommend { display: flex; gap: 8px; margin-bottom: 10px; }
     .diagnosis-recommend-item { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 8px; cursor: pointer; }
     .diagnosis-recommend-item:first-child { border-color: #e63946; }
-    .diagnosis-recommend-thumb { height: 60px; background: #333; border-radius: 4px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; opacity: 0.5; }
+    .diagnosis-recommend-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 4px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; opacity: 0.5; }
     .diagnosis-recommend-title { font-size: 10px; font-weight: 600; text-align: center; }
     .btn-reset { width: 100%; background: transparent; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 10px; }
     .btn-start { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; }
@@ -54,7 +54,7 @@
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
     .manga-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .manga-card { background: #111; border-radius: 8px; overflow: hidden; cursor: pointer; }
-    .manga-thumb { height: 120px; background: #333; position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
+    .manga-thumb { aspect-ratio: 1446/2048; background: #333; position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
     .manga-badge { position: absolute; top: 4px; left: 4px; background: #e63946; color: #fff; padding: 2px 5px; border-radius: 4px; font-size: 8px; font-weight: 700; }
     .manga-info { padding: 8px; }
     .manga-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
@@ -87,7 +87,7 @@
     
     .manga-detail { padding: 20px 16px; border-bottom: 1px solid #222; }
     .manga-detail-inner { display: flex; gap: 16px; }
-    .manga-cover { width: 100px; height: 140px; background: #333; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.5; }
+    .manga-cover { width: 100px; aspect-ratio: 1446/2048; background: #333; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.5; }
     .manga-detail-info { flex: 1; min-width: 0; }
     .manga-detail-badges { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .manga-detail-badge { background: #e63946; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
@@ -112,7 +112,7 @@
     .related-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
     .related-list { display: flex; gap: 12px; overflow-x: auto; }
     .related-item { flex-shrink: 0; width: 100px; cursor: pointer; }
-    .related-thumb { height: 140px; background: #333; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
+    .related-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
     .related-name { font-size: 12px; font-weight: 600; }
     .related-rating { font-size: 10px; color: #e63946; }
   </style>
@@ -149,18 +149,18 @@
     let imageFolders = {};
     
     let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A', imageFolder: null },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B', imageFolder: null },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C', imageFolder: null },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D', imageFolder: null },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E', imageFolder: null },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F', imageFolder: null },
-      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, tags: [1, 5], pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A', imageFolder: null },
-      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B', imageFolder: null },
-      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C', imageFolder: null },
-      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, tags: [2, 4], pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D', imageFolder: null },
-      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, tags: [1, 3], pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E', imageFolder: null },
-      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F', imageFolder: null },
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, tags: [1, 5], pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, tags: [2, 4], pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, tags: [1, 3], pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F', imageFolder: null, likes: 0, dislikes: 0 },
     ];
     
     function getBadgeColor(badgeName) {
@@ -420,9 +420,15 @@
 
     function renderDetail() {
       const m = selectedManga;
-      const rel = mangaList.filter(x => x.id !== m.id && x.type === m.type).slice(0, 3);
+      // ランダムでおすすめ作品を選択（自分以外）
+      const otherManga = mangaList.filter(x => x.id !== m.id);
+      const shuffled = otherManga.sort(() => Math.random() - 0.5);
+      const recommended = shuffled.slice(0, 3);
+      
       const thumb = getMangaThumbnail(m);
-      const samples = getMangaSamples(m);
+      // フォルダの全画像をページとして使用
+      const allImages = m.imageFolder && imageFolders[m.imageFolder] ? imageFolders[m.imageFolder] : [];
+      const totalPages = allImages.length > 0 ? allImages.length : m.pages;
       
       return `
         <header class="detail-header">
@@ -447,28 +453,34 @@
           </div>
         </section>
         
-        ${samples.length > 0 ? `
-        <section class="section" style="padding-top:16px">
-          <h3 class="section-title">📷 サンプル画像</h3>
-          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px">
-            ${samples.slice(0, 9).map((img, i) => `
-              <div style="aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:#222">
-                <img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover" onclick="openSampleViewer(${i})">
-              </div>
-            `).join('')}
-          </div>
-          ${samples.length > 9 ? `<p style="text-align:center;font-size:11px;opacity:0.5;margin-top:8px">他 ${samples.length - 9} 枚</p>` : ''}
-        </section>
-        ` : ''}
-        
         <section class="reader">
           <div class="reader-pages">
-            ${Array.from({length: m.pages}, (_, i) => `
-              <div class="reader-page">
-                ${i + 1}ページ目
-                <span class="reader-page-num">${i + 1}/${m.pages}</span>
-              </div>
-            `).join('')}
+            ${allImages.length > 0 ? 
+              allImages.map((img, i) => `
+                <div class="reader-page" style="background:none;padding:0">
+                  <img src="${img.dataUrl}" style="width:100%;height:auto;display:block;border-radius:8px">
+                  <span class="reader-page-num">${i + 1}/${totalPages}</span>
+                </div>
+              `).join('') :
+              Array.from({length: totalPages}, (_, i) => `
+                <div class="reader-page">
+                  ${i + 1}ページ目
+                  <span class="reader-page-num">${i + 1}/${totalPages}</span>
+                </div>
+              `).join('')
+            }
+          </div>
+        </section>
+        
+        <section class="rating-section" style="padding:16px;border-bottom:1px solid #222">
+          <p style="font-size:12px;text-align:center;margin-bottom:12px">この作品はいかがでしたか？</p>
+          <div style="display:flex;justify-content:center;gap:24px">
+            <button onclick="rateManga(${m.id}, 'like')" style="background:#22c55e;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:8px">
+              👍 <span style="font-size:13px">${m.likes || 0}</span>
+            </button>
+            <button onclick="rateManga(${m.id}, 'dislike')" style="background:#ef4444;border:none;color:#fff;padding:12px 28px;border-radius:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:8px">
+              👎 <span style="font-size:13px">${m.dislikes || 0}</span>
+            </button>
           </div>
         </section>
         
@@ -482,9 +494,9 @@
         </section>
         
         <section class="related">
-          <h2 class="related-title">📖 同じジャンルの作品</h2>
+          <h2 class="related-title">✨ オススメの作品</h2>
           <div class="related-list">
-            ${rel.map(r => {
+            ${recommended.map(r => {
               const rThumb = getMangaThumbnail(r);
               return `
               <div class="related-item" onclick="openManga(${r.id})">
@@ -501,6 +513,30 @@
         <footer class="footer">
           <p>© 2026 ${siteSettings.siteName}</p>
         </footer>`;
+    }
+    
+    // いいね/わるい機能
+    function rateManga(id, type) {
+      const manga = mangaList.find(m => m.id === id);
+      if (!manga) return;
+      
+      // 既に投票済みかチェック
+      const voted = localStorage.getItem('voted_' + id);
+      if (voted) {
+        alert('既に評価済みです');
+        return;
+      }
+      
+      if (type === 'like') {
+        manga.likes = (manga.likes || 0) + 1;
+      } else {
+        manga.dislikes = (manga.dislikes || 0) + 1;
+      }
+      
+      localStorage.setItem('mangahub_manga', JSON.stringify(mangaList));
+      localStorage.setItem('voted_' + id, type);
+      selectedManga = manga;
+      render();
     }
 
     // Actions
