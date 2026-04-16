@@ -457,8 +457,13 @@
               </div>
             `).join('')}
           </div>
-          ${selectedImages.length > 0 ? `<p style="font-size:10px;opacity:0.7;margin-top:10px">✓ ${selectedImages.length}枚選択中</p>` : ''}
-          ${xImages.length > 0 ? `<button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px" onclick="clearAllImages()">全ての画像を削除</button>` : ''}
+          ${selectedImages.length > 0 ? `
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+              <p style="font-size:10px;opacity:0.7;width:100%">✓ ${selectedImages.length}枚選択中</p>
+              <button class="btn btn-small btn-danger" onclick="deleteSelectedImages()">選択した画像を削除</button>
+              <button class="btn btn-small btn-outline" onclick="clearSelection()">選択解除</button>
+            </div>
+          ` : ''}
         </div>`;
     }
 
@@ -667,6 +672,20 @@
       else selectedImages.push(idx);
       render();
     }
+    function deleteSelectedImages() {
+      if (selectedImages.length === 0) return;
+      if (confirm(`${selectedImages.length}枚の画像を削除しますか？`)) {
+        const sortedIndices = [...selectedImages].sort((a, b) => b - a);
+        sortedIndices.forEach(idx => xImages.splice(idx, 1));
+        selectedImages = [];
+        saveData(STORAGE_KEYS.xImages, xImages);
+        render();
+      }
+    }
+    function clearSelection() {
+      selectedImages = [];
+      render();
+    }
     function clearAllImages() {
       if (confirm('全ての画像を削除しますか？')) {
         xImages = [];
@@ -727,84 +746,103 @@
         
         // サイト別の画像抽出ロジック
         if (url.includes('dlsite.com')) {
-          // DLsite: 作品サムネイルのみ（スライダー内の画像）
-          const selectors = [
-            '.product-slider img',
-            '.product-slider-data img',
-            '#work_left .slider img',
-            '.work_slider img',
-            '[class*="slider"] img[src*="img_main"]',
-            '[class*="slider"] img[src*="img_sam"]',
-            'img[src*="/work/"][src*="/sam"]',
-            'img[src*="img_main"]'
-          ];
+          // DLsite: RJ番号から画像URLを直接生成
+          const rjMatch = url.match(/RJ(\d+)/i) || html.match(/RJ(\d+)/i);
           
-          selectors.forEach(selector => {
-            doc.querySelectorAll(selector).forEach(img => {
-              const src = img.src || img.getAttribute('data-src') || img.getAttribute('srcset')?.split(' ')[0];
-              if (src && !src.includes('banner') && !src.includes('icon') && !src.includes('logo')) {
+          if (rjMatch) {
+            const rjNum = rjMatch[1];
+            const rjId = 'RJ' + rjNum;
+            // フォルダ名は1000単位で切り上げ (RJ01036846 → RJ01037000)
+            const folderNum = Math.ceil(parseInt(rjNum) / 1000) * 1000;
+            const folderId = 'RJ' + String(folderNum).padStart(rjNum.length, '0');
+            
+            // 作品タイプを判定 (maniax, home, pro など)
+            let workType = 'doujin';
+            if (url.includes('/pro/')) workType = 'professional';
+            else if (url.includes('/home/')) workType = 'home';
+            else if (url.includes('/girls/')) workType = 'girls';
+            
+            // メイン画像と連番サンプル画像のURLを生成 (最大10枚試行)
+            for (let i = 0; i <= 10; i++) {
+              let imgName;
+              if (i === 0) {
+                imgName = `${rjId}_img_main.jpg`;
+              } else {
+                imgName = `${rjId}_img_smp${i}.jpg`;
+              }
+              const imgUrl = `https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${imgName}`;
+              imageUrls.push(imgUrl);
+            }
+            
+            // PNG版も試行
+            for (let i = 0; i <= 10; i++) {
+              let imgName;
+              if (i === 0) {
+                imgName = `${rjId}_img_main.png`;
+              } else {
+                imgName = `${rjId}_img_smp${i}.png`;
+              }
+              const imgUrl = `https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${imgName}`;
+              imageUrls.push(imgUrl);
+            }
+          }
+          
+          // HTMLからも抽出（フォールバック）
+          doc.querySelectorAll('img').forEach(img => {
+            const src = img.src || img.getAttribute('data-src') || img.getAttribute('srcset')?.split(' ')[0];
+            if (src && (src.includes('img_main') || src.includes('img_smp'))) {
+              imageUrls.push(src);
+            }
+          });
+          
+        } else if (url.includes('log-lio.com') || url.includes('manga') || url.includes('comic') || url.includes('ero')) {
+          // URLから数字を抽出（例: /3495/ → 3495）
+          const urlNumMatch = url.match(/\/(\d{3,})\/?/);
+          const urlNumber = urlNumMatch ? urlNumMatch[1] : null;
+          
+          console.log('URL Number:', urlNumber);
+          
+          // すべての画像属性をチェック
+          const imgAttrs = ['src', 'data-src', 'data-lazy-src', 'data-original', 'data-lazy', 'lazysrc', 'data-srcset', 'srcset'];
+          
+          // まずすべての画像を収集
+          const allImages = [];
+          doc.querySelectorAll('img').forEach(img => {
+            for (const attr of imgAttrs) {
+              let src = img.getAttribute(attr);
+              if (src) {
+                if (attr.includes('srcset')) {
+                  src = src.split(',')[0].split(' ')[0];
+                }
+                if (src.startsWith('http') || src.startsWith('//') || src.startsWith('/')) {
+                  allImages.push(src);
+                  break;
+                }
+              }
+            }
+          });
+          
+          console.log('All images found:', allImages.length);
+          
+          // URLの数字を含む画像のみをフィルタ
+          if (urlNumber) {
+            allImages.forEach(src => {
+              if (src.includes(urlNumber)) {
                 imageUrls.push(src);
               }
             });
-          });
-          
-          // フォールバック: メイン画像エリアの画像
-          if (imageUrls.length === 0) {
-            doc.querySelectorAll('img').forEach(img => {
-              const src = img.src || img.getAttribute('data-src');
-              if (src && (src.includes('img_main') || src.includes('img_sam') || src.includes('/work/'))) {
-                if (!src.includes('banner') && !src.includes('icon') && !src.includes('logo') && !src.includes('btn')) {
-                  imageUrls.push(src);
-                }
-              }
-            });
+            console.log('Images with URL number:', imageUrls.length);
           }
           
-        } else if (url.includes('log-lio.com') || url.includes('manga') || url.includes('comic')) {
-          // 漫画サイト: 本文内の縦並び画像のみ
-          const selectors = [
-            'article img',
-            '.entry-content img',
-            '.post-content img',
-            '.content img',
-            'main img',
-            '.single-content img',
-            '#content img'
-          ];
-          
-          selectors.forEach(selector => {
-            doc.querySelectorAll(selector).forEach(img => {
-              const src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
-              if (src) {
-                // 広告・バナー・サイドバー画像を除外
-                const parent = img.closest('aside, .sidebar, .widget, .ad, .banner, .related, footer, header, nav');
-                if (!parent) {
-                  const srcLower = src.toLowerCase();
-                  if (!srcLower.includes('banner') && 
-                      !srcLower.includes('ad') && 
-                      !srcLower.includes('logo') &&
-                      !srcLower.includes('icon') &&
-                      !srcLower.includes('avatar') &&
-                      !srcLower.includes('thumb') &&
-                      !srcLower.includes('related')) {
-                    imageUrls.push(src);
-                  }
-                }
-              }
-            });
-          });
-          
-          // フォールバック: 大きい画像のみ
+          // URLの数字でフィルタできなかった場合、広告を除外した画像
           if (imageUrls.length === 0) {
-            doc.querySelectorAll('img').forEach(img => {
-              const src = img.src || img.getAttribute('data-src');
-              const width = parseInt(img.getAttribute('width') || img.width || 0);
-              const height = parseInt(img.getAttribute('height') || img.height || 0);
-              if (src && (width > 300 || height > 300 || (!width && !height))) {
-                const srcLower = src.toLowerCase();
-                if (!srcLower.includes('banner') && !srcLower.includes('ad') && !srcLower.includes('logo')) {
-                  imageUrls.push(src);
-                }
+            const excludePatterns = ['banner', 'ad-', 'advertisement', 'logo', 'icon', 'avatar', 'sns', 'twitter', 'facebook', 'amazon', 'rakuten', 'affiliate', 'widget', 'thumb', 'related'];
+            
+            allImages.forEach(src => {
+              const srcLower = src.toLowerCase();
+              const isExcluded = excludePatterns.some(p => srcLower.includes(p));
+              if (!isExcluded && srcLower.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
+                imageUrls.push(src);
               }
             });
           }
@@ -840,8 +878,19 @@
         // 重複除去
         const uniqueUrls = [...new Set(normalizedUrls)];
         
+        // デバッグ情報
+        console.log('Found images:', uniqueUrls.length, uniqueUrls);
+        
         if (uniqueUrls.length === 0) {
-          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 対象の画像が見つかりませんでした</p></div>';
+          // HTMLの取得状況を表示
+          const imgCount = doc.querySelectorAll('img').length;
+          resultDiv.innerHTML = `
+            <div class="admin-card" style="border-color:#f59e0b">
+              <p style="font-size:11px;color:#f59e0b;margin-bottom:8px">⚠️ 対象の画像が見つかりませんでした</p>
+              <p style="font-size:10px;opacity:0.6">HTML内のimg要素: ${imgCount}個</p>
+              <p style="font-size:10px;opacity:0.6;margin-top:4px">このサイトは動的読み込みの可能性があります</p>
+              <p style="font-size:10px;opacity:0.8;margin-top:8px">💡 手動でダウンロードしてフォルダアップロードをお試しください</p>
+            </div>`;
           btn.disabled = false;
           btn.textContent = '画像を取得';
           return;
