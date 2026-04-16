@@ -126,7 +126,8 @@
       siteSettings: 'mangahub_site',
       mangaList: 'mangahub_manga',
       tags: 'mangahub_tags',
-      badges: 'mangahub_badges'
+      badges: 'mangahub_badges',
+      imageFolders: 'mangahub_image_folders'
     };
     
     // デフォルトデータ
@@ -145,24 +146,40 @@
       { id: 2, name: '人気', color: '#e63946' },
     ];
     
+    let imageFolders = {};
+    
     let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A' },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B' },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C' },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D' },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E' },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F' },
-      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, tags: [1, 5], pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A' },
-      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B' },
-      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C' },
-      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, tags: [2, 4], pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D' },
-      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, tags: [1, 3], pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E' },
-      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F' },
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A', imageFolder: null },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B', imageFolder: null },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C', imageFolder: null },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D', imageFolder: null },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E', imageFolder: null },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F', imageFolder: null },
+      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, tags: [1, 5], pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A', imageFolder: null },
+      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B', imageFolder: null },
+      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C', imageFolder: null },
+      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, tags: [2, 4], pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D', imageFolder: null },
+      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, tags: [1, 3], pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E', imageFolder: null },
+      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F', imageFolder: null },
     ];
     
     function getBadgeColor(badgeName) {
       const badge = badgesMaster.find(b => b.name === badgeName);
       return badge ? badge.color : '#e63946';
+    }
+    
+    function getMangaThumbnail(manga) {
+      if (manga.imageFolder && imageFolders[manga.imageFolder] && imageFolders[manga.imageFolder].length > 0) {
+        return imageFolders[manga.imageFolder][0].dataUrl;
+      }
+      return null;
+    }
+    
+    function getMangaSamples(manga) {
+      if (manga.imageFolder && imageFolders[manga.imageFolder] && imageFolders[manga.imageFolder].length > 1) {
+        return imageFolders[manga.imageFolder].slice(1);
+      }
+      return [];
     }
 
     const diagnosisQuestions = [
@@ -227,6 +244,8 @@
         if (tags) tagsMaster = JSON.parse(tags);
         const badges = localStorage.getItem(STORAGE_KEYS.badges);
         if (badges) badgesMaster = JSON.parse(badges);
+        const folders = localStorage.getItem(STORAGE_KEYS.imageFolders);
+        if (folders) imageFolders = JSON.parse(folders);
       } catch (e) { console.error('Load error:', e); }
     }
 
@@ -289,10 +308,12 @@
               const endIdx = startIdx + ITEMS_PER_PAGE;
               const pageItems = mangaList.slice(startIdx, endIdx);
               
-              return pageItems.map((m, i) => `
+              return pageItems.map((m, i) => {
+                const thumb = getMangaThumbnail(m);
+                return `
                 <div class="manga-card" onclick="openManga(${m.id})">
-                  <div class="manga-thumb">
-                    サムネイル
+                  <div class="manga-thumb" ${thumb ? `style="background:none"` : ''}>
+                    ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover">` : 'サムネイル'}
                     ${m.badge ? `<span class="manga-badge">${m.badge}</span>` : ''}
                   </div>
                   <div class="manga-info">
@@ -304,7 +325,7 @@
                   </div>
                 </div>
                 ${(i + 1) % 6 === 0 && i < pageItems.length - 1 ? '<div class="ad-slot"><span class="ad-label">広告枠</span><div class="ad-placeholder"></div></div>' : ''}
-              `).join('');
+              `}).join('');
             })()}
           </div>
           ${renderPagination()}
@@ -387,7 +408,9 @@
         <div class="diagnosis-recommend">
           ${rec.map(m => `
             <div class="diagnosis-recommend-item" onclick="openManga(${m.id})">
-              <div class="diagnosis-recommend-thumb">サムネ</div>
+              <div class="diagnosis-recommend-thumb" ${getMangaThumbnail(m) ? 'style="background:none"' : ''}>
+                ${getMangaThumbnail(m) ? `<img src="${getMangaThumbnail(m)}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : 'サムネ'}
+              </div>
               <div class="diagnosis-recommend-title">${m.title}</div>
             </div>
           `).join('')}
@@ -398,6 +421,9 @@
     function renderDetail() {
       const m = selectedManga;
       const rel = mangaList.filter(x => x.id !== m.id && x.type === m.type).slice(0, 3);
+      const thumb = getMangaThumbnail(m);
+      const samples = getMangaSamples(m);
+      
       return `
         <header class="detail-header">
           <button class="back-btn" onclick="goHome()">←</button>
@@ -406,7 +432,9 @@
         
         <section class="manga-detail">
           <div class="manga-detail-inner">
-            <div class="manga-cover">表紙</div>
+            <div class="manga-cover" ${thumb ? `style="background:none"` : ''}>
+              ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : '表紙'}
+            </div>
             <div class="manga-detail-info">
               <div class="manga-detail-badges">
                 ${m.badge ? `<span class="manga-detail-badge">${m.badge}</span>` : ''}
@@ -418,6 +446,20 @@
             </div>
           </div>
         </section>
+        
+        ${samples.length > 0 ? `
+        <section class="section" style="padding-top:16px">
+          <h3 class="section-title">📷 サンプル画像</h3>
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px">
+            ${samples.slice(0, 9).map((img, i) => `
+              <div style="aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:#222">
+                <img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover" onclick="openSampleViewer(${i})">
+              </div>
+            `).join('')}
+          </div>
+          ${samples.length > 9 ? `<p style="text-align:center;font-size:11px;opacity:0.5;margin-top:8px">他 ${samples.length - 9} 枚</p>` : ''}
+        </section>
+        ` : ''}
         
         <section class="reader">
           <div class="reader-pages">
@@ -442,13 +484,17 @@
         <section class="related">
           <h2 class="related-title">📖 同じジャンルの作品</h2>
           <div class="related-list">
-            ${rel.map(r => `
+            ${rel.map(r => {
+              const rThumb = getMangaThumbnail(r);
+              return `
               <div class="related-item" onclick="openManga(${r.id})">
-                <div class="related-thumb">サムネ</div>
+                <div class="related-thumb" ${rThumb ? 'style="background:none"' : ''}>
+                  ${rThumb ? `<img src="${rThumb}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : 'サムネ'}
+                </div>
                 <p class="related-name">${r.title}</p>
                 <p class="related-rating">★ ${r.rating}</p>
               </div>
-            `).join('')}
+            `}).join('')}
           </div>
         </section>
         
@@ -466,11 +512,65 @@
       render();
     }
     function resetDiag() { diagStep = -1; diagAnswers = []; showResult = false; resultType = null; render(); }
-    function openManga(id) { selectedManga = mangaList.find(m => m.id === id); currentPage = 'detail'; window.scrollTo(0, 0); render(); }
-    function goHome() { currentPage = 'home'; selectedManga = null; render(); }
+    
+    function openManga(id) {
+      selectedManga = mangaList.find(m => m.id === id);
+      currentPage = 'detail';
+      // URLを更新
+      const url = new URL(window.location);
+      url.searchParams.set('id', id);
+      window.history.pushState({id: id}, '', url);
+      window.scrollTo(0, 0);
+      render();
+    }
+    
+    function goHome() {
+      currentPage = 'home';
+      selectedManga = null;
+      currentListPage = 1;
+      // URLからパラメータを削除
+      const url = new URL(window.location);
+      url.searchParams.delete('id');
+      window.history.pushState({}, '', url);
+      render();
+    }
+    
+    // ブラウザの戻る/進むボタン対応
+    window.addEventListener('popstate', function(e) {
+      const url = new URL(window.location);
+      const id = url.searchParams.get('id');
+      if (id) {
+        const manga = mangaList.find(m => m.id === parseInt(id));
+        if (manga) {
+          selectedManga = manga;
+          currentPage = 'detail';
+        } else {
+          currentPage = 'home';
+          selectedManga = null;
+        }
+      } else {
+        currentPage = 'home';
+        selectedManga = null;
+      }
+      render();
+    });
+    
+    // URLパラメータから初期表示を決定
+    function initFromUrl() {
+      const url = new URL(window.location);
+      const id = url.searchParams.get('id');
+      if (id) {
+        const manga = mangaList.find(m => m.id === parseInt(id));
+        if (manga) {
+          selectedManga = manga;
+          currentPage = 'detail';
+        }
+      }
+    }
 
     // 初期化
     loadData();
+    initFromUrl();
     render();
   </script>
 </body>
