@@ -676,7 +676,7 @@
       }
     }
 
-    // Scraper - 実際に動作する版
+    // Scraper - サイト別フィルタ対応版
     async function scrapeImages() {
       const url = document.getElementById('scraperUrl').value.trim();
       const folder = document.getElementById('scraperFolder').value.trim() || 'scraped_images';
@@ -688,99 +688,241 @@
       
       btn.disabled = true;
       btn.textContent = '取得中...';
-      resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px">🔄 画像を取得中...</p></div>';
+      resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px">🔄 ページを解析中...</p></div>';
+      
+      // 複数のCORSプロキシ
+      const proxies = [
+        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+        (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+      ];
       
       try {
-        // CORSプロキシを使用
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-        const response = await fetch(proxyUrl);
-        const html = await response.text();
+        let html = null;
         
-        // HTMLから画像URLを抽出
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const imgElements = doc.querySelectorAll('img');
-        
-        const imageUrls = [];
-        imgElements.forEach(img => {
-          let src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
-          if (src) {
-            // 相対URLを絶対URLに変換
-            if (src.startsWith('//')) src = 'https:' + src;
-            else if (src.startsWith('/')) {
-              const urlObj = new URL(url);
-              src = urlObj.origin + src;
-            } else if (!src.startsWith('http')) {
-              const urlObj = new URL(url);
-              src = urlObj.origin + '/' + src;
+        // HTMLを取得
+        for (const proxy of proxies) {
+          try {
+            const response = await fetch(proxy(url), { timeout: 10000 });
+            if (response.ok) {
+              html = await response.text();
+              break;
             }
-            // 画像URLのみを追加（小さいアイコンを除外）
-            if (src.match(/\.(jpg|jpeg|png|gif|webp)/i) || src.includes('image')) {
-              imageUrls.push(src);
-            }
-          }
-        });
+          } catch (e) { continue; }
+        }
         
-        if (imageUrls.length === 0) {
-          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 画像が見つかりませんでした</p></div>';
+        if (!html) {
+          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#e63946">❌ ページの取得に失敗しました</p></div>';
           btn.disabled = false;
           btn.textContent = '画像を取得';
           return;
         }
         
-        // 重複を除去
-        const uniqueUrls = [...new Set(imageUrls)];
+        // HTMLから画像URLを抽出（サイト別フィルタ適用）
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const baseUrl = new URL(url);
         
-        resultDiv.innerHTML = `<div class="admin-card"><p style="font-size:11px">📥 ${uniqueUrls.length}枚の画像をダウンロード中...</p><div id="progressBar" style="background:#333;height:4px;border-radius:2px;margin-top:8px"><div style="background:#e63946;height:100%;width:0%;border-radius:2px;transition:width 0.3s" id="progressFill"></div></div></div>`;
+        let imageUrls = [];
+        
+        // サイト別の画像抽出ロジック
+        if (url.includes('dlsite.com')) {
+          // DLsite: 作品サムネイルのみ（スライダー内の画像）
+          const selectors = [
+            '.product-slider img',
+            '.product-slider-data img',
+            '#work_left .slider img',
+            '.work_slider img',
+            '[class*="slider"] img[src*="img_main"]',
+            '[class*="slider"] img[src*="img_sam"]',
+            'img[src*="/work/"][src*="/sam"]',
+            'img[src*="img_main"]'
+          ];
+          
+          selectors.forEach(selector => {
+            doc.querySelectorAll(selector).forEach(img => {
+              const src = img.src || img.getAttribute('data-src') || img.getAttribute('srcset')?.split(' ')[0];
+              if (src && !src.includes('banner') && !src.includes('icon') && !src.includes('logo')) {
+                imageUrls.push(src);
+              }
+            });
+          });
+          
+          // フォールバック: メイン画像エリアの画像
+          if (imageUrls.length === 0) {
+            doc.querySelectorAll('img').forEach(img => {
+              const src = img.src || img.getAttribute('data-src');
+              if (src && (src.includes('img_main') || src.includes('img_sam') || src.includes('/work/'))) {
+                if (!src.includes('banner') && !src.includes('icon') && !src.includes('logo') && !src.includes('btn')) {
+                  imageUrls.push(src);
+                }
+              }
+            });
+          }
+          
+        } else if (url.includes('log-lio.com') || url.includes('manga') || url.includes('comic')) {
+          // 漫画サイト: 本文内の縦並び画像のみ
+          const selectors = [
+            'article img',
+            '.entry-content img',
+            '.post-content img',
+            '.content img',
+            'main img',
+            '.single-content img',
+            '#content img'
+          ];
+          
+          selectors.forEach(selector => {
+            doc.querySelectorAll(selector).forEach(img => {
+              const src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+              if (src) {
+                // 広告・バナー・サイドバー画像を除外
+                const parent = img.closest('aside, .sidebar, .widget, .ad, .banner, .related, footer, header, nav');
+                if (!parent) {
+                  const srcLower = src.toLowerCase();
+                  if (!srcLower.includes('banner') && 
+                      !srcLower.includes('ad') && 
+                      !srcLower.includes('logo') &&
+                      !srcLower.includes('icon') &&
+                      !srcLower.includes('avatar') &&
+                      !srcLower.includes('thumb') &&
+                      !srcLower.includes('related')) {
+                    imageUrls.push(src);
+                  }
+                }
+              }
+            });
+          });
+          
+          // フォールバック: 大きい画像のみ
+          if (imageUrls.length === 0) {
+            doc.querySelectorAll('img').forEach(img => {
+              const src = img.src || img.getAttribute('data-src');
+              const width = parseInt(img.getAttribute('width') || img.width || 0);
+              const height = parseInt(img.getAttribute('height') || img.height || 0);
+              if (src && (width > 300 || height > 300 || (!width && !height))) {
+                const srcLower = src.toLowerCase();
+                if (!srcLower.includes('banner') && !srcLower.includes('ad') && !srcLower.includes('logo')) {
+                  imageUrls.push(src);
+                }
+              }
+            });
+          }
+          
+        } else {
+          // 汎用: 大きめの画像のみ
+          doc.querySelectorAll('img').forEach(img => {
+            const src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+            if (src) {
+              const srcLower = src.toLowerCase();
+              if (!srcLower.includes('banner') && 
+                  !srcLower.includes('ad') && 
+                  !srcLower.includes('logo') &&
+                  !srcLower.includes('icon') &&
+                  !srcLower.includes('avatar') &&
+                  !srcLower.includes('sprite')) {
+                imageUrls.push(src);
+              }
+            }
+          });
+        }
+        
+        // URLを正規化
+        const normalizedUrls = imageUrls.map(src => {
+          try {
+            if (src.startsWith('//')) return 'https:' + src;
+            if (src.startsWith('/')) return baseUrl.origin + src;
+            if (!src.startsWith('http')) return new URL(src, url).href;
+            return src;
+          } catch { return null; }
+        }).filter(Boolean);
+        
+        // 重複除去
+        const uniqueUrls = [...new Set(normalizedUrls)];
+        
+        if (uniqueUrls.length === 0) {
+          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 対象の画像が見つかりませんでした</p></div>';
+          btn.disabled = false;
+          btn.textContent = '画像を取得';
+          return;
+        }
+        
+        resultDiv.innerHTML = `<div class="admin-card"><p style="font-size:11px">📥 ${uniqueUrls.length}枚の画像をダウンロード中...</p><div style="background:#333;height:4px;border-radius:2px;margin-top:8px"><div style="background:#e63946;height:100%;width:0%;border-radius:2px;transition:width 0.3s" id="progressFill"></div></div><p style="font-size:10px;opacity:0.5;margin-top:6px" id="progressText">0/${uniqueUrls.length}</p></div>`;
         
         // 画像をダウンロード
         const downloadedImages = [];
         let completed = 0;
         
-        for (let i = 0; i < uniqueUrls.length; i++) {
-          try {
-            const imgUrl = uniqueUrls[i];
-            const imgProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(imgUrl);
-            const imgResponse = await fetch(imgProxy);
-            const blob = await imgResponse.blob();
-            
-            if (blob.type.startsWith('image/')) {
-              const reader = new FileReader();
-              const dataUrl = await new Promise((resolve) => {
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-              });
+        for (let i = 0; i < Math.min(uniqueUrls.length, 100); i++) {
+          const imgUrl = uniqueUrls[i];
+          let success = false;
+          
+          for (const proxy of proxies) {
+            try {
+              const imgResponse = await fetch(proxy(imgUrl));
+              if (!imgResponse.ok) continue;
               
-              const fileName = `${folder}_${String(i + 1).padStart(3, '0')}.${blob.type.split('/')[1] || 'jpg'}`;
-              downloadedImages.push({ name: fileName, dataUrl });
-            }
-          } catch (e) {
-            console.log('Image download failed:', uniqueUrls[i]);
+              const blob = await imgResponse.blob();
+              if (blob.size < 5000) continue; // 5KB未満はスキップ（小さいアイコン除外）
+              
+              if (blob.type.startsWith('image/') || blob.size > 10000) {
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                  reader.onload = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+                
+                if (dataUrl.startsWith('data:image/') || dataUrl.length > 5000) {
+                  const ext = blob.type.split('/')[1] || 'jpg';
+                  const fileName = `${folder}_${String(i + 1).padStart(3, '0')}.${ext}`;
+                  downloadedImages.push({ name: fileName, dataUrl });
+                  success = true;
+                  break;
+                }
+              }
+            } catch (e) { continue; }
           }
           
           completed++;
-          document.getElementById('progressFill').style.width = `${(completed / uniqueUrls.length) * 100}%`;
+          const progress = document.getElementById('progressFill');
+          const text = document.getElementById('progressText');
+          if (progress) progress.style.width = `${(completed / Math.min(uniqueUrls.length, 100)) * 100}%`;
+          if (text) text.textContent = `${completed}/${Math.min(uniqueUrls.length, 100)}`;
         }
         
         if (downloadedImages.length > 0) {
-          // フォルダに保存
           imageFolders[folder] = downloadedImages;
           localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
           
-          resultDiv.innerHTML = `<div class="admin-card" style="border-color:#22c55e"><p style="font-size:11px;color:#22c55e">✅ ${downloadedImages.length}枚の画像を「${folder}」に保存しました</p></div>`;
+          resultDiv.innerHTML = `<div class="admin-card" style="border-color:#22c55e"><p style="font-size:12px;color:#22c55e">✅ ${downloadedImages.length}枚を「${folder}」に保存しました</p><button class="btn btn-small" style="margin-top:8px" onclick="loadFolderToLibrary('${folder}');xSubTab='images';render();">ライブラリに追加して確認</button></div>`;
           showToast(`${downloadedImages.length}枚保存しました`);
-          render();
         } else {
-          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 画像のダウンロードに失敗しました（CORS制限の可能性）</p></div>';
+          // 失敗時は画像URLリストを表示
+          resultDiv.innerHTML = `
+            <div class="admin-card" style="border-color:#f59e0b">
+              <p style="font-size:11px;color:#f59e0b;margin-bottom:10px">⚠️ 自動ダウンロードに失敗しました</p>
+              <p style="font-size:10px;opacity:0.7;margin-bottom:10px">画像URLは検出できました。手動でダウンロードしてください：</p>
+              <div style="margin-top:10px;max-height:150px;overflow-y:auto;background:#000;padding:8px;border-radius:6px">
+                ${uniqueUrls.slice(0, 20).map((u, i) => `<p style="font-size:9px;word-break:break-all;margin-bottom:4px;opacity:0.8">${i + 1}. <a href="${u}" target="_blank" style="color:#e63946">${u.substring(0, 50)}...</a></p>`).join('')}
+              </div>
+              <button class="btn btn-small btn-secondary" style="margin-top:10px" onclick="copyUrls(\`${uniqueUrls.join('\\n')}\`)">URLをコピー</button>
+            </div>`;
         }
+        
+        render();
         
       } catch (e) {
         console.error('Scrape error:', e);
-        resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#e63946">❌ 取得に失敗しました。URLを確認してください。</p></div>';
+        resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#e63946">❌ エラーが発生しました</p></div>';
       }
       
       btn.disabled = false;
       btn.textContent = '画像を取得';
+    }
+    
+    function copyUrls(urls) {
+      navigator.clipboard.writeText(urls).then(() => showToast('URLをコピーしました'));
     }
     
     // フォルダの画像をライブラリに追加
