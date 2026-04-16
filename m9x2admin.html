@@ -377,6 +377,10 @@
           <button style="width:100%;background:#222;border:1px dashed #444;color:#fff;padding:10px;border-radius:8px;cursor:pointer" onclick="addTreePost()">+ リプライを追加</button>
         </div>
         <div class="admin-group">
+          <h3 class="admin-group-title"><span>👁️</span> プレビュー</h3>
+          <button class="btn btn-secondary" style="width:100%;padding:12px" onclick="showPreview()">📱 投稿プレビューを表示</button>
+        </div>
+        <div class="admin-group">
           <h3 class="admin-group-title"><span>🔗</span> アフィリエイトリンク</h3>
           <div class="admin-card">
             <div class="admin-field"><label class="admin-label">リンクURL</label><input type="text" id="affLink" class="admin-input" placeholder="https://..."></div>
@@ -386,7 +390,18 @@
           <button class="admin-save" style="flex:1" onclick="postNow()">今すぐ投稿</button>
           <button class="btn btn-secondary" style="flex:1;padding:14px" onclick="schedulePost()">予約投稿</button>
         </div>
-        <button class="btn btn-outline" style="width:100%;margin-top:8px;padding:12px" onclick="saveAsTemplate()">テンプレートとして保存</button>`;
+        <button class="btn btn-outline" style="width:100%;margin-top:8px;padding:12px" onclick="saveAsTemplate()">テンプレートとして保存</button>
+        
+        <!-- プレビューモーダル -->
+        <div id="previewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;overflow-y:auto">
+          <div style="max-width:500px;margin:20px auto;padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+              <h3 style="color:#fff;font-size:16px;margin:0">📱 投稿プレビュー</h3>
+              <button onclick="closePreview()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer">&times;</button>
+            </div>
+            <div id="previewContent"></div>
+          </div>
+        </div>`;
     }
 
     function renderXTemplates() {
@@ -443,78 +458,178 @@
     function renderXImages() {
       return `
         <div class="admin-group">
-          <h3 class="admin-group-title"><span>🖼️</span> 画像ライブラリ</h3>
-          <div class="admin-card" style="margin-bottom:10px">
+          <h3 class="admin-group-title"><span>📁</span> フォルダ</h3>
+          ${Object.keys(imageFolders).length === 0 ? 
+            '<p style="font-size:11px;opacity:0.5;text-align:center;padding:12px">フォルダがありません</p>' : 
+            Object.keys(imageFolders).map(folder => `
+              <div class="admin-card" style="margin-bottom:6px;cursor:pointer;${currentImageFolder===folder?'border-color:#e63946':''}">
+                <div style="display:flex;justify-content:space-between;align-items:center" onclick="openImageFolder('${folder}')">
+                  <div>
+                    <span style="font-size:12px">${currentImageFolder===folder?'📂':'📁'} ${folder}</span>
+                    <span style="font-size:10px;opacity:0.5;margin-left:8px">${imageFolders[folder].length}枚</span>
+                  </div>
+                  <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+                    <button class="btn btn-small btn-outline" onclick="downloadFolder('${folder}')" title="ダウンロード">💾</button>
+                    <button class="btn btn-small btn-danger" onclick="deleteFolder('${folder}')" title="削除">✕</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+        ${currentImageFolder ? `
+          <div class="admin-group">
+            <h3 class="admin-group-title"><span>🖼️</span> ${currentImageFolder} の画像</h3>
+            <div class="image-grid">
+              ${imageFolders[currentImageFolder]?.map((img, idx) => `
+                <div class="image-item ${selectedImages.includes(idx)?'selected':''}" onclick="toggleImageSelect(${idx})">
+                  <img src="${img.dataUrl}" alt="${img.name}">
+                  ${selectedImages.includes(idx) ? `<div class="image-item-order">${selectedImages.indexOf(idx)+1}</div>` : ''}
+                  <div class="image-item-name">${img.name}</div>
+                </div>
+              `).join('') || ''}
+            </div>
+            ${selectedImages.length > 0 ? `
+              <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                <p style="font-size:10px;opacity:0.7;width:100%">✓ ${selectedImages.length}枚選択中</p>
+                <button class="btn btn-small" onclick="useSelectedImages()">投稿に使用</button>
+                <button class="btn btn-small btn-danger" onclick="deleteSelectedFromFolder()">削除</button>
+                <button class="btn btn-small btn-outline" onclick="clearSelection()">選択解除</button>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+        <div class="admin-group">
+          <h3 class="admin-group-title"><span>➕</span> 画像追加</h3>
+          <div class="admin-card">
             <label style="display:block;font-size:11px;margin-bottom:8px">フォルダから一括アップロード</label>
             <input type="file" id="imageFolder" webkitdirectory multiple accept="image/*" style="font-size:11px" onchange="uploadFolder(this)">
           </div>
-          <div class="image-grid">
-            ${xImages.length === 0 ? '<p style="grid-column:span 4;font-size:11px;opacity:0.5;text-align:center;padding:20px">画像がありません</p>' : xImages.map((img, idx) => `
-              <div class="image-item ${selectedImages.includes(idx)?'selected':''}" onclick="toggleImageSelect(${idx})">
-                ${img.dataUrl ? `<img src="${img.dataUrl}" alt="${img.name}">` : `<div class="image-item-placeholder">${img.name.substring(0,8)}</div>`}
-                ${selectedImages.includes(idx) ? `<div class="image-item-order">${selectedImages.indexOf(idx)+1}</div>` : ''}
-                <div class="image-item-name">${img.name}</div>
-              </div>
-            `).join('')}
-          </div>
-          ${selectedImages.length > 0 ? `
-            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-              <p style="font-size:10px;opacity:0.7;width:100%">✓ ${selectedImages.length}枚選択中</p>
-              <button class="btn btn-small btn-danger" onclick="deleteSelectedImages()">選択した画像を削除</button>
-              <button class="btn btn-small btn-outline" onclick="clearSelection()">選択解除</button>
-            </div>
-          ` : ''}
         </div>`;
+    }
+    
+    let currentImageFolder = null;
+    
+    function openImageFolder(folder) {
+      currentImageFolder = currentImageFolder === folder ? null : folder;
+      selectedImages = [];
+      render();
+    }
+    
+    function deleteSelectedFromFolder() {
+      if (!currentImageFolder || selectedImages.length === 0) return;
+      if (confirm(`${selectedImages.length}枚を削除しますか？`)) {
+        const sortedIndices = [...selectedImages].sort((a, b) => b - a);
+        sortedIndices.forEach(idx => imageFolders[currentImageFolder].splice(idx, 1));
+        if (imageFolders[currentImageFolder].length === 0) {
+          delete imageFolders[currentImageFolder];
+          currentImageFolder = null;
+        }
+        selectedImages = [];
+        localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+        render();
+      }
+    }
+    
+    function useSelectedImages() {
+      if (!currentImageFolder || selectedImages.length === 0) return;
+      // 選択した画像をxImagesに追加
+      selectedImages.forEach(idx => {
+        const img = imageFolders[currentImageFolder][idx];
+        if (img && !xImages.find(x => x.dataUrl === img.dataUrl)) {
+          xImages.push(img);
+        }
+      });
+      saveData(STORAGE_KEYS.xImages, xImages);
+      showToast(`${selectedImages.length}枚を投稿用に追加`);
+      selectedImages = [];
+      xSubTab = 'editor';
+      render();
     }
 
     function renderXScraper() {
       return `
         <div class="admin-group">
           <h3 class="admin-group-title"><span>🔍</span> URL画像取得</h3>
-          <div class="admin-card">
-            <div class="admin-field">
-              <label class="admin-label">画像取得元URL（複数行OK）</label>
-              <textarea id="scraperUrl" class="admin-textarea" style="height:100px" placeholder="https://example.com/page1/&#10;https://example.com/page2/&#10;https://example.com/page3/"></textarea>
-            </div>
-            <div class="admin-field">
-              <label class="admin-label">保存先フォルダ名</label>
-              <input type="text" id="scraperFolder" class="admin-input" placeholder="folder_name" value="scraped_images">
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn" onclick="scrapeImages()" id="scrapeBtn">🚀 高速取得</button>
-              <span style="font-size:10px;opacity:0.5;align-self:center">5並列ダウンロード</span>
-            </div>
+          <div id="urlInputs">
+            ${(scrapeUrls.length === 0 ? [{url:'', folder:''}] : scrapeUrls).map((item, idx) => `
+              <div class="admin-card" style="margin-bottom:8px;display:flex;gap:8px;align-items:center">
+                <div style="flex:1">
+                  <input type="text" class="admin-input" style="margin-bottom:6px;font-size:11px" placeholder="https://..." value="${item.url}" onchange="updateScrapeUrl(${idx}, 'url', this.value)">
+                  <input type="text" class="admin-input" style="font-size:11px" placeholder="フォルダ名" value="${item.folder}" onchange="updateScrapeUrl(${idx}, 'folder', this.value)">
+                </div>
+                <button class="btn btn-small btn-danger" onclick="removeScrapeUrl(${idx})" style="padding:8px">✕</button>
+              </div>
+            `).join('')}
           </div>
-          <div id="scrapeResult" style="margin-top:12px"></div>
+          <button class="btn btn-outline" style="width:100%;margin-bottom:10px" onclick="addScrapeUrl()">+ URL追加</button>
+          <button class="btn" onclick="scrapeImages()" id="scrapeBtn">🚀 一括取得</button>
         </div>
         <div class="admin-group">
           <h3 class="admin-group-title"><span>📁</span> 取得済みフォルダ</h3>
           ${Object.keys(imageFolders).length === 0 ? 
             '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">フォルダがありません</p>' : 
             Object.keys(imageFolders).map(folder => `
-              <div class="admin-card" style="display:flex;justify-content:space-between;align-items:center">
-                <div>
-                  <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
-                  <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚の画像</div>
+              <div class="admin-card" style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div onclick="toggleFolderView('${folder}')" style="cursor:pointer;flex:1">
+                    <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
+                    <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚</div>
+                  </div>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">追加</button>
+                    <button class="btn btn-small btn-outline" onclick="downloadFolder('${folder}')">💾</button>
+                    <button class="btn btn-small btn-danger" onclick="deleteFolder('${folder}')">✕</button>
+                  </div>
                 </div>
-                <div style="display:flex;gap:6px">
-                  <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">ライブラリに追加</button>
-                  <button class="btn btn-small btn-outline" onclick="deleteFolder('${folder}')">削除</button>
+                <div id="folder_${folder.replace(/[^a-zA-Z0-9]/g, '_')}" style="display:none;margin-top:10px">
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+                    ${imageFolders[folder].slice(0, 8).map(img => `
+                      <img src="${img.dataUrl}" style="width:100%;height:50px;object-fit:cover;border-radius:4px">
+                    `).join('')}
+                    ${imageFolders[folder].length > 8 ? `<div style="display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;font-size:10px;height:50px">+${imageFolders[folder].length - 8}</div>` : ''}
+                  </div>
                 </div>
               </div>
             `).join('')}
-        </div>
-        <div class="admin-group">
-          <h3 class="admin-group-title"><span>ℹ️</span> 使い方</h3>
-          <div class="admin-card">
-            <p style="font-size:11px;line-height:1.8;opacity:0.8">
-              1. URLを入力（複数行で複数ページ同時OK）<br>
-              2. フォルダ名を指定して「高速取得」<br>
-              3. 5枚同時並列ダウンロードで高速化<br>
-              4.「ライブラリに追加」で画像管理に移動
-            </p>
-          </div>
         </div>`;
+    }
+    
+    let scrapeUrls = [{url:'', folder:''}];
+    
+    function addScrapeUrl() {
+      scrapeUrls.push({url:'', folder:''});
+      render();
+    }
+    function removeScrapeUrl(idx) {
+      scrapeUrls.splice(idx, 1);
+      if (scrapeUrls.length === 0) scrapeUrls = [{url:'', folder:''}];
+      render();
+    }
+    function updateScrapeUrl(idx, key, value) {
+      scrapeUrls[idx][key] = value;
+    }
+    function toggleFolderView(folder) {
+      const el = document.getElementById('folder_' + folder.replace(/[^a-zA-Z0-9]/g, '_'));
+      if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    async function downloadFolder(folderName) {
+      const images = imageFolders[folderName];
+      if (!images || images.length === 0) return;
+      
+      showToast('ダウンロード準備中...');
+      
+      // 各画像を個別にダウンロード
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        const link = document.createElement('a');
+        link.href = img.dataUrl;
+        link.download = `${folderName}_${String(i + 1).padStart(3, '0')}.jpg`;
+        link.click();
+        await new Promise(r => setTimeout(r, 200)); // 少し待つ
+      }
+      
+      showToast(`${images.length}枚をダウンロード`);
     }
 
     // Actions
@@ -611,6 +726,56 @@
       render();
     }
 
+    // Preview
+    function showPreview() {
+      const acc = xAccounts.find(a => a.id === selectedAccountId);
+      const modal = document.getElementById('previewModal');
+      const content = document.getElementById('previewContent');
+      
+      let html = '';
+      currentTreePosts.forEach((post, idx) => {
+        const images = selectedImages.slice(0, post.imageCount).map(imgIdx => xImages[imgIdx]);
+        
+        html += `
+          <div style="background:#16181c;border:1px solid #2f3336;border-radius:12px;padding:12px;margin-bottom:${idx < currentTreePosts.length - 1 ? '2px' : '12px'}">
+            ${idx > 0 ? '<div style="position:absolute;left:28px;top:-12px;width:2px;height:12px;background:#2f3336"></div>' : ''}
+            <div style="display:flex;gap:10px">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#e63946,#ff6b6b);display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                  <span style="font-weight:bold;color:#fff">${acc?.handle || 'ユーザー'}</span>
+                  <span style="color:#71767b;font-size:13px">@${acc?.handle?.replace('@', '') || 'user'}</span>
+                  <span style="color:#71767b;font-size:13px">· 今</span>
+                </div>
+                <div style="color:#e7e9ea;white-space:pre-wrap;line-height:1.4;font-size:14px">${post.content || '<span style="color:#71767b;font-style:italic">（テキストを入力してください）</span>'}</div>
+                ${images.length > 0 ? `
+                  <div style="display:grid;grid-template-columns:${images.length > 1 ? 'repeat(2,1fr)' : '1fr'};gap:2px;margin-top:10px;border-radius:12px;overflow:hidden">
+                    ${images.map(img => img?.dataUrl ? `<img src="${img.dataUrl}" style="width:100%;height:${images.length > 2 ? '100px' : '150px'};object-fit:cover">` : `<div style="background:#2f3336;height:${images.length > 2 ? '100px' : '150px'};display:flex;align-items:center;justify-content:center;color:#71767b">画像</div>`).join('')}
+                  </div>
+                ` : ''}
+                <div style="display:flex;gap:40px;margin-top:12px;color:#71767b;font-size:13px">
+                  <span>💬</span>
+                  <span>🔁</span>
+                  <span>❤️</span>
+                  <span>📊</span>
+                  <span>📤</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      content.innerHTML = html;
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
     // Post
     function postNow() {
       const content = currentTreePosts.map(p => p.content).join(' | ');
@@ -697,125 +862,96 @@
       }
     }
 
-    // Scraper - 複数プロキシ並列試行版
+    // Scraper - URLごとにフォルダ保存
     async function scrapeImages() {
-      const urlText = document.getElementById('scraperUrl').value.trim();
-      const folder = document.getElementById('scraperFolder').value.trim() || 'scraped_images';
-      
-      if (!urlText) { showToast('URLを入力してください'); return; }
-      
-      const urls = urlText.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
-      if (urls.length === 0) { showToast('有効なURLを入力してください'); return; }
+      const validUrls = scrapeUrls.filter(item => item.url.startsWith('http'));
+      if (validUrls.length === 0) { showToast('URLを入力してください'); return; }
       
       const btn = document.getElementById('scrapeBtn');
-      const resultDiv = document.getElementById('scrapeResult');
-      
       btn.disabled = true;
       btn.textContent = '取得中...';
-      resultDiv.innerHTML = `<div class="admin-card"><p style="font-size:11px">🔄 解析中...</p></div>`;
       
-      // 複数のCORSプロキシ
       const proxies = [
         u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
         u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
         u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-        u => `https://thingproxy.freeboard.io/fetch/${u}`,
       ];
       
-      try {
-        let allImageUrls = [];
+      let totalDownloaded = 0;
+      
+      for (const item of validUrls) {
+        const url = item.url;
+        const folder = item.folder || 'folder_' + Date.now();
         
-        for (const url of urls) {
-          if (url.includes('dlsite.com')) {
-            const rjMatch = url.match(/RJ(\d+)/i);
-            if (rjMatch) {
-              const rjNum = rjMatch[1];
-              const rjId = 'RJ' + rjNum;
-              const folderNum = Math.ceil(parseInt(rjNum) / 1000) * 1000;
-              const folderId = 'RJ' + String(folderNum).padStart(rjNum.length, '0');
-              let workType = 'doujin';
-              if (url.includes('/pro/')) workType = 'professional';
-              else if (url.includes('/girls/')) workType = 'girls';
-              else if (url.includes('/home/')) workType = 'home';
+        let imageUrls = [];
+        
+        if (url.includes('dlsite.com')) {
+          const rjMatch = url.match(/RJ(\d+)/i);
+          if (rjMatch) {
+            const rjNum = rjMatch[1];
+            const rjId = 'RJ' + rjNum;
+            const folderNum = Math.ceil(parseInt(rjNum) / 1000) * 1000;
+            const folderId = 'RJ' + String(folderNum).padStart(rjNum.length, '0');
+            let workType = 'doujin';
+            if (url.includes('/pro/')) workType = 'professional';
+            else if (url.includes('/girls/')) workType = 'girls';
+            
+            imageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_main.jpg`);
+            for (let i = 1; i <= 20; i++) {
+              imageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_smp${i}.jpg`);
+            }
+          }
+        } else {
+          for (const makeProxy of proxies) {
+            try {
+              const response = await fetch(makeProxy(url));
+              if (!response.ok) continue;
+              const html = await response.text();
               
-              allImageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_main.jpg`);
-              for (let i = 1; i <= 20; i++) {
-                allImageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_smp${i}.jpg`);
-              }
-            }
-          } else {
-            // 他サイト
-            for (const makeProxy of proxies) {
-              try {
-                const response = await fetch(makeProxy(url));
-                if (!response.ok) continue;
-                const html = await response.text();
-                
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const baseUrl = new URL(url);
-                const urlNumMatch = url.match(/\/(\d{3,})\/?/);
-                const urlNumber = urlNumMatch ? urlNumMatch[1] : null;
-                
-                doc.querySelectorAll('img').forEach(img => {
-                  let src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
-                  if (src) {
-                    if (src.startsWith('//')) src = 'https:' + src;
-                    else if (src.startsWith('/')) src = baseUrl.origin + src;
-                    if (src.startsWith('http') && (urlNumber ? src.includes(urlNumber) : true)) {
-                      allImageUrls.push(src);
-                    }
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const baseUrl = new URL(url);
+              const urlNumMatch = url.match(/\/(\d{3,})\/?/);
+              const urlNumber = urlNumMatch ? urlNumMatch[1] : null;
+              
+              doc.querySelectorAll('img').forEach(img => {
+                let src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                if (src) {
+                  if (src.startsWith('//')) src = 'https:' + src;
+                  else if (src.startsWith('/')) src = baseUrl.origin + src;
+                  if (src.startsWith('http') && (urlNumber ? src.includes(urlNumber) : true)) {
+                    imageUrls.push(src);
                   }
-                });
-                break;
-              } catch (e) { continue; }
-            }
+                }
+              });
+              break;
+            } catch (e) { continue; }
           }
         }
         
-        const uniqueUrls = [...new Set(allImageUrls)];
-        if (uniqueUrls.length === 0) {
-          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 画像が見つかりません</p></div>';
-          btn.disabled = false;
-          btn.textContent = '🚀 高速取得';
-          return;
-        }
+        if (imageUrls.length === 0) continue;
         
-        resultDiv.innerHTML = `<div class="admin-card"><p style="font-size:11px">🖼️ ダウンロード中... <span id="imgCount">0</span>枚</p></div>`;
-        
+        // ダウンロード
         const downloadedImages = [];
         let consecutiveFails = 0;
         
-        // 画像を1つずつダウンロード（複数プロキシを試行）
-        for (let i = 0; i < uniqueUrls.length; i++) {
-          const imgUrl = uniqueUrls[i];
-          let success = false;
-          
-          // 全プロキシを並列で試行
+        for (const imgUrl of imageUrls) {
           const results = await Promise.allSettled(
             proxies.map(async (makeProxy) => {
               const controller = new AbortController();
               const timeout = setTimeout(() => controller.abort(), 8000);
-              
               try {
                 const response = await fetch(makeProxy(imgUrl), { signal: controller.signal });
                 clearTimeout(timeout);
-                
                 if (!response.ok) return null;
-                
                 const blob = await response.blob();
-                if (blob.size < 3000) return null;
-                if (!blob.type.startsWith('image/') && blob.size < 10000) return null;
-                
+                if (blob.size < 3000 || !blob.type.startsWith('image/')) return null;
                 return blob;
-              } catch (e) {
-                clearTimeout(timeout);
-                return null;
-              }
+              } catch (e) { clearTimeout(timeout); return null; }
             })
           );
           
-          // 成功したものを使用
+          let success = false;
           for (const result of results) {
             if (result.status === 'fulfilled' && result.value) {
               const blob = result.value;
@@ -824,7 +960,6 @@
                 reader.onload = () => resolve(reader.result);
                 reader.readAsDataURL(blob);
               });
-              
               downloadedImages.push({
                 name: `${folder}_${String(downloadedImages.length + 1).padStart(3, '0')}.jpg`,
                 dataUrl
@@ -834,10 +969,8 @@
             }
           }
           
-          if (success) {
-            consecutiveFails = 0;
-            document.getElementById('imgCount').textContent = downloadedImages.length;
-          } else {
+          if (success) consecutiveFails = 0;
+          else {
             consecutiveFails++;
             if (consecutiveFails >= 3 && downloadedImages.length > 0) break;
           }
@@ -845,21 +978,22 @@
         
         if (downloadedImages.length > 0) {
           imageFolders[folder] = downloadedImages;
-          localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
-          resultDiv.innerHTML = `<div class="admin-card" style="border-color:#22c55e"><p style="font-size:12px;color:#22c55e">✅ ${downloadedImages.length}枚を保存</p><button class="btn btn-small" style="margin-top:8px" onclick="loadFolderToLibrary('${folder}');xSubTab='images';render();">ライブラリに追加</button></div>`;
-          showToast(`${downloadedImages.length}枚保存`);
-        } else {
-          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 取得失敗。手動ダウンロードをお試しください</p></div>';
+          totalDownloaded += downloadedImages.length;
         }
-        
-        render();
-      } catch (e) {
-        console.error('Error:', e);
-        resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#e63946">❌ エラー</p></div>';
       }
       
+      localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+      
+      if (totalDownloaded > 0) {
+        showToast(`${totalDownloaded}枚を${validUrls.length}フォルダに保存`);
+      } else {
+        showToast('取得失敗');
+      }
+      
+      scrapeUrls = [{url:'', folder:''}];
       btn.disabled = false;
-      btn.textContent = '🚀 高速取得';
+      btn.textContent = '🚀 一括取得';
+      render();
     }
     
     // 未使用だが残す
@@ -889,17 +1023,8 @@
     // フォルダの画像をライブラリに追加
     function loadFolderToLibrary(folderName) {
       if (!imageFolders[folderName]) return;
-      
-      const images = imageFolders[folderName];
-      images.forEach(img => {
-        // 重複チェック
-        if (!xImages.find(x => x.name === img.name)) {
-          xImages.push(img);
-        }
-      });
-      
-      saveData(STORAGE_KEYS.xImages, xImages);
-      showToast(`${images.length}枚をライブラリに追加しました`);
+      showToast(`「${folderName}」を追加しました`);
+      currentImageFolder = folderName;
       xSubTab = 'images';
       render();
     }
@@ -908,6 +1033,7 @@
     function deleteFolder(folderName) {
       if (confirm(`「${folderName}」を削除しますか？`)) {
         delete imageFolders[folderName];
+        if (currentImageFolder === folderName) currentImageFolder = null;
         localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
         showToast('フォルダを削除しました');
         render();
