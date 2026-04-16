@@ -131,7 +131,10 @@
       xHistory: 'mangahub_x_history',
       xSchedule: 'mangahub_x_schedule',
       xImages: 'mangahub_x_images',
-      imageFolders: 'mangahub_image_folders'
+      imageFolders: 'mangahub_image_folders',
+      folderSources: 'mangahub_folder_sources',
+      folderMetadata: 'mangahub_folder_metadata',
+      mangaRatings: 'mangahub_manga_ratings'
     };
     
     // データ
@@ -157,13 +160,15 @@
     ];
     
     let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A', imageFolder: null },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B', imageFolder: null },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！', type: 'C', imageFolder: null },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界ファンタジー', type: 'D', imageFolder: null },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'テンポ抜群のラブコメ', type: 'E', imageFolder: null },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '駆け引きラブ', type: 'F', imageFolder: null },
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！', type: 'C', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界ファンタジー', type: 'D', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'テンポ抜群のラブコメ', type: 'E', imageFolder: null, likes: 0, dislikes: 0 },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '駆け引きラブ', type: 'F', imageFolder: null, likes: 0, dislikes: 0 },
     ];
+    
+    let folderSources = {}; // { folderName: sourceUrl }
     
     let xAccounts = [
       { id: 1, name: 'メインアカウント', handle: '@manga_main', type: 'main', apiKey: '', apiSecret: '', accessToken: '', accessSecret: '' },
@@ -178,6 +183,7 @@
     let xSchedule = [];
     let xImages = [];
     let imageFolders = {}; // { folderName: [{ name, dataUrl }] }
+    let folderMetadata = {}; // { folderName: { title, description } }
     
     let currentTreePosts = [{ id: 1, type: 'tweet', content: '', images: [], imageCount: 4 }];
     let selectedImages = [];
@@ -213,6 +219,10 @@
         if (images) xImages = JSON.parse(images);
         const folders = localStorage.getItem(STORAGE_KEYS.imageFolders);
         if (folders) imageFolders = JSON.parse(folders);
+        const sources = localStorage.getItem(STORAGE_KEYS.folderSources);
+        if (sources) folderSources = JSON.parse(sources);
+        const metadata = localStorage.getItem(STORAGE_KEYS.folderMetadata);
+        if (metadata) folderMetadata = JSON.parse(metadata);
       } catch (e) { console.error('Load error:', e); }
     }
 
@@ -345,6 +355,7 @@
                 <div style="font-size:11px;opacity:0.4;margin-bottom:8px">
                   ID: ${m.id} | URL: <span style="color:#e63946;cursor:pointer" onclick="window.open('index.html?id=${m.id}','_blank')">?id=${m.id}</span>
                   ${m.imageFolder ? ` | 📁 ${m.imageFolder} (${folderImages.length}枚)` : ' | 📁 未設定'}
+                  | 👍 ${m.likes || 0} 👎 ${m.dislikes || 0}
                 </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
                   ${m.badge ? `<span style="background:${getBadgeColor(m.badge)};padding:4px 10px;border-radius:6px;font-size:11px">${m.badge}</span>` : ''}
@@ -414,11 +425,18 @@
         </div>`;
     }
     
+    let folderSearchQuery = '';
+    
     function renderEditModal() {
       const m = editingManga;
       const folderNames = Object.keys(imageFolders);
+      const filteredFolders = folderSearchQuery 
+        ? folderNames.filter(f => f.toLowerCase().includes(folderSearchQuery.toLowerCase()))
+        : folderNames;
       const selectedFolder = m.imageFolder;
       const folderImages = selectedFolder && imageFolders[selectedFolder] ? imageFolders[selectedFolder] : [];
+      const sourceUrl = selectedFolder && folderSources[selectedFolder] ? folderSources[selectedFolder] : null;
+      const meta = selectedFolder && folderMetadata[selectedFolder] ? folderMetadata[selectedFolder] : null;
       
       return `
         <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;overflow-y:auto">
@@ -443,17 +461,6 @@
                 <select id="editType" class="admin-select">
                   ${['A','B','C','D','E','F'].map(t => `<option value="${t}" ${m.type===t?'selected':''}>${t}</option>`).join('')}
                 </select>
-              </div>
-            </div>
-            
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-              <div class="admin-field">
-                <label class="admin-label">評価 (1.0-5.0)</label>
-                <input type="number" id="editRating" class="admin-input" value="${m.rating}" step="0.1" min="1" max="5">
-              </div>
-              <div class="admin-field">
-                <label class="admin-label">ページ数</label>
-                <input type="number" id="editPages" class="admin-input" value="${m.pages || 5}">
               </div>
             </div>
             
@@ -482,22 +489,47 @@
             </div>
             
             <div class="admin-field">
-              <label class="admin-label">📁 画像フォルダ（1枚目=サムネ、2枚目以降=サンプル）</label>
-              <select id="editImageFolder" class="admin-select" style="margin-top:8px" onchange="selectImageFolder(this.value)">
-                <option value="">なし</option>
-                ${folderNames.map(f => `<option value="${f}" ${selectedFolder===f?'selected':''}>${f} (${imageFolders[f].length}枚)</option>`).join('')}
-              </select>
+              <label class="admin-label">📁 画像フォルダ（ページ数は画像枚数で自動設定）</label>
+              <input type="text" class="admin-input" style="margin-top:8px;margin-bottom:8px" placeholder="🔍 フォルダ名で検索..." value="${folderSearchQuery}" oninput="searchFolder(this.value)">
+              <div style="max-height:150px;overflow-y:auto;background:#000;border:1px solid #333;border-radius:8px">
+                <div style="padding:10px;cursor:pointer;border-bottom:1px solid #222;${!selectedFolder?'background:#1a1a1a':''}" onclick="selectImageFolder('')">
+                  なし
+                </div>
+                ${filteredFolders.map(f => {
+                  const hasMeta = folderMetadata[f] && (folderMetadata[f].title || folderMetadata[f].description);
+                  return `
+                  <div style="padding:10px;cursor:pointer;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;${selectedFolder===f?'background:#1a1a1a':''}" onclick="selectImageFolder('${f}')">
+                    <span>${f} ${hasMeta ? '📝' : ''}</span>
+                    <span style="font-size:11px;opacity:0.6">${imageFolders[f].length}枚</span>
+                  </div>
+                `}).join('')}
+                ${filteredFolders.length === 0 ? '<div style="padding:10px;opacity:0.5;text-align:center">該当なし</div>' : ''}
+              </div>
+              ${sourceUrl ? `
+                <div style="margin-top:8px;padding:10px;background:#1a1a1a;border-radius:8px">
+                  <div style="font-size:10px;opacity:0.5;margin-bottom:4px">取得元URL</div>
+                  <a href="${sourceUrl}" target="_blank" style="color:#e63946;font-size:12px;word-break:break-all">${sourceUrl}</a>
+                </div>
+              ` : ''}
+              ${meta ? `
+                <div style="margin-top:8px;padding:10px;background:#1a1a1a;border-radius:8px;border-left:3px solid #e63946">
+                  <div style="font-size:10px;opacity:0.5;margin-bottom:6px">📝 取得済みメタデータ</div>
+                  ${meta.title ? `<div style="font-size:12px;font-weight:600;margin-bottom:4px">${meta.title}</div>` : ''}
+                  ${meta.description ? `<div style="font-size:11px;opacity:0.7;line-height:1.5">${meta.description.substring(0, 100)}${meta.description.length > 100 ? '...' : ''}</div>` : ''}
+                  <button onclick="applyMetadata()" style="margin-top:8px;background:#e63946;border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer">タイトル・説明文に適用</button>
+                </div>
+              ` : ''}
               ${folderImages.length > 0 ? `
                 <div style="margin-top:12px">
-                  <div style="font-size:11px;opacity:0.6;margin-bottom:8px">プレビュー（1枚目がサムネイル）</div>
+                  <div style="font-size:11px;opacity:0.6;margin-bottom:8px">プレビュー（全${folderImages.length}ページ）</div>
                   <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">
                     ${folderImages.slice(0, 10).map((img, i) => `
                       <div style="flex-shrink:0;position:relative">
-                        <img src="${img.dataUrl}" style="width:${i===0?'100px':'70px'};height:${i===0?'140px':'100px'};object-fit:cover;border-radius:8px;border:${i===0?'3px solid #e63946':'1px solid #333'}">
-                        <div style="position:absolute;top:4px;left:4px;background:${i===0?'#e63946':'#333'};padding:2px 6px;border-radius:4px;font-size:9px">${i===0?'サムネ':i}</div>
+                        <img src="${img.dataUrl}" style="width:${i===0?'100px':'70px'};aspect-ratio:1446/2048;object-fit:cover;border-radius:8px;border:${i===0?'3px solid #e63946':'1px solid #333'}">
+                        <div style="position:absolute;top:4px;left:4px;background:${i===0?'#e63946':'#333'};padding:2px 6px;border-radius:4px;font-size:9px">${i+1}P</div>
                       </div>
                     `).join('')}
-                    ${folderImages.length > 10 ? `<div style="flex-shrink:0;width:70px;height:100px;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px">+${folderImages.length - 10}</div>` : ''}
+                    ${folderImages.length > 10 ? `<div style="flex-shrink:0;width:70px;aspect-ratio:1446/2048;background:#222;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px">+${folderImages.length - 10}</div>` : ''}
                   </div>
                 </div>
               ` : folderNames.length === 0 ? `
@@ -518,6 +550,47 @@
     
     function selectImageFolder(folderName) {
       editingManga.imageFolder = folderName || null;
+      folderSearchQuery = '';
+      
+      // メタデータがあれば自動入力
+      if (folderName && folderMetadata[folderName]) {
+        const meta = folderMetadata[folderName];
+        const currentTitle = editingManga.title || '';
+        const currentDesc = editingManga.description || '';
+        
+        // タイトルが空または「新規作品」の場合は自動入力
+        if (!currentTitle || currentTitle === '新規作品' || currentTitle.startsWith('新規作品')) {
+          if (meta.title) editingManga.title = meta.title;
+        }
+        // 説明文が空の場合は自動入力
+        if (!currentDesc) {
+          if (meta.description) editingManga.description = meta.description;
+        }
+      }
+      
+      render();
+    }
+    
+    function applyMetadata() {
+      if (!editingManga || !editingManga.imageFolder) return;
+      const meta = folderMetadata[editingManga.imageFolder];
+      if (!meta) return;
+      
+      if (meta.title) {
+        editingManga.title = meta.title;
+        const titleInput = document.getElementById('editTitle');
+        if (titleInput) titleInput.value = meta.title;
+      }
+      if (meta.description) {
+        editingManga.description = meta.description;
+        const descInput = document.getElementById('editDesc');
+        if (descInput) descInput.value = meta.description;
+      }
+      showToast('メタデータを適用しました');
+    }
+    
+    function searchFolder(query) {
+      folderSearchQuery = query;
       render();
     }
     
@@ -600,22 +673,30 @@
       const idx = mangaList.findIndex(m => m.id === editingManga.id);
       if (idx < 0) return;
       
+      // フォルダの画像枚数でページ数を自動設定
+      const folderImages = editingManga.imageFolder && imageFolders[editingManga.imageFolder] 
+        ? imageFolders[editingManga.imageFolder] 
+        : [];
+      const autoPages = folderImages.length > 0 ? folderImages.length : 5;
+      
       mangaList[idx] = {
         ...mangaList[idx],
         title: document.getElementById('editTitle').value.trim(),
         genre: document.getElementById('editGenre').value.trim(),
         type: document.getElementById('editType').value,
-        rating: parseFloat(document.getElementById('editRating').value) || 4.5,
-        pages: parseInt(document.getElementById('editPages').value) || 5,
         description: document.getElementById('editDesc').value.trim(),
         badge: editingManga.badge,
         tags: editingManga.tags,
-        imageFolder: editingManga.imageFolder
+        imageFolder: editingManga.imageFolder,
+        pages: autoPages,
+        likes: mangaList[idx].likes || 0,
+        dislikes: mangaList[idx].dislikes || 0
       };
       
       saveData(STORAGE_KEYS.mangaList, mangaList);
       showToast('保存しました');
       editingManga = null;
+      folderSearchQuery = '';
       render();
     }
 
@@ -916,12 +997,15 @@
       if (Object.keys(imageFolders).length === 0) {
         return '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">フォルダがありません</p>';
       }
-      return Object.keys(imageFolders).map(folder => `
+      return Object.keys(imageFolders).map(folder => {
+        const meta = folderMetadata[folder];
+        return `
         <div class="admin-card" style="margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div onclick="toggleFolderView('${folder}')" style="cursor:pointer;flex:1">
-              <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
+              <div style="font-size:12px;font-weight:600">📁 ${folder} ${meta ? '📝' : ''}</div>
               <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚</div>
+              ${meta && meta.title ? `<div style="font-size:10px;color:#e63946;margin-top:2px">${meta.title.substring(0, 30)}${meta.title.length > 30 ? '...' : ''}</div>` : ''}
             </div>
             <div style="display:flex;gap:4px">
               <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">追加</button>
@@ -932,13 +1016,13 @@
           <div id="folder_${folder.replace(/[^a-zA-Z0-9]/g, '_')}" style="display:none;margin-top:10px">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
               ${imageFolders[folder].slice(0, 8).map(img => `
-                <img src="${img.dataUrl}" style="width:100%;height:50px;object-fit:cover;border-radius:4px">
+                <img src="${img.dataUrl}" style="width:100%;aspect-ratio:1446/2048;object-fit:cover;border-radius:4px">
               `).join('')}
-              ${imageFolders[folder].length > 8 ? `<div style="display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;font-size:10px;height:50px">+${imageFolders[folder].length - 8}</div>` : ''}
+              ${imageFolders[folder].length > 8 ? `<div style="display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;font-size:10px;aspect-ratio:1446/2048">+${imageFolders[folder].length - 8}</div>` : ''}
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
     
     let scrapeUrls = [{url:'', folder:''}];
@@ -1367,6 +1451,8 @@
         
         let imageUrls = [];
         let debugInfo = '';
+        let scrapedTitle = '';
+        let scrapedDescription = '';
         
         if (url.includes('dlsite.com')) {
           const rjMatch = url.match(/RJ(\d+)/i);
@@ -1422,6 +1508,19 @@
           
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
+          
+          // タイトルと説明文を取得
+          const titleEl = doc.querySelector('title');
+          if (titleEl) {
+            scrapedTitle = titleEl.textContent.trim()
+              .replace(/\s*[\|｜\-－–—]\s*無料.*$/i, '')
+              .replace(/\s*[\|｜\-－–—]\s*[^\|｜\-－–—]*サイト.*$/i, '')
+              .trim();
+          }
+          const descEl = doc.querySelector('meta[name="description"]');
+          if (descEl) {
+            scrapedDescription = descEl.getAttribute('content')?.trim() || '';
+          }
           
           // URLから数字を抽出
           const urlNumMatch = url.match(/\/(\d{3,})\/?/);
@@ -1535,8 +1634,15 @@
         
         if (downloadedImages.length > 0) {
           imageFolders[folder] = downloadedImages;
+          folderSources[folder] = url; // 取得元URLを保存
+          // メタデータを保存（タイトル・説明文）
+          if (scrapedTitle || scrapedDescription) {
+            folderMetadata[folder] = { title: scrapedTitle, description: scrapedDescription };
+            localStorage.setItem(STORAGE_KEYS.folderMetadata, JSON.stringify(folderMetadata));
+          }
           totalDownloaded += downloadedImages.length;
           localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+          localStorage.setItem(STORAGE_KEYS.folderSources, JSON.stringify(folderSources));
           
           const folderList = document.getElementById('folderList');
           if (folderList) folderList.innerHTML = renderFolderList();
