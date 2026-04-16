@@ -337,7 +337,7 @@
               <div style="flex:1;min-width:0">
                 <div style="font-size:15px;font-weight:700;margin-bottom:6px">${m.title}</div>
                 <div style="font-size:12px;opacity:0.6;margin-bottom:4px">${m.genre} | タイプ: ${m.type} | ★${m.rating}</div>
-                <div style="font-size:11px;opacity:0.4;margin-bottom:8px">ID: ${m.id} | URL: /manga/${m.id}/</div>
+                <div style="font-size:11px;opacity:0.4;margin-bottom:8px">作品ID: ${m.id}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
                   ${m.badge ? `<span style="background:${getBadgeColor(m.badge)};padding:4px 10px;border-radius:6px;font-size:11px">${m.badge}</span>` : ''}
                   ${(m.tags || []).map(tagId => {
