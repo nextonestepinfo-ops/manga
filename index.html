@@ -145,7 +145,6 @@
     .admin-save { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; }
     .admin-logout { background: #333; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; }
     
-    /* X Editor Styles */
     .x-subtabs { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
     .x-subtab { background: #222; border: none; color: #fff; opacity: 0.6; padding: 8px 12px; border-radius: 6px; font-size: 10px; cursor: pointer; }
     .x-subtab.active { background: #e63946; opacity: 1; }
@@ -183,17 +182,18 @@
     .history-status.failed { background: #dc2626; }
     .history-content { font-size: 11px; line-height: 1.5; opacity: 0.8; }
     
+    /* 画像グリッド - 明るく修正 */
     .image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .image-item { aspect-ratio: 1; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; opacity: 0.5; position: relative; cursor: pointer; }
-    .image-item.selected { border: 2px solid #e63946; }
-    .image-item-order { position: absolute; top: 4px; left: 4px; width: 18px; height: 18px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .image-item { aspect-ratio: 1; background: #1a1a1a; border-radius: 6px; position: relative; cursor: pointer; overflow: hidden; border: 2px solid transparent; }
+    .image-item.selected { border-color: #e63946; }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .image-item-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); color: #666; font-size: 9px; text-align: center; padding: 4px; }
+    .image-item-order { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; background: #e63946; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+    .image-item-name { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 3px 4px; font-size: 8px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
     
     .schedule-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 8px; }
     .schedule-time { font-size: 11px; font-weight: 600; }
     .schedule-content { flex: 1; font-size: 10px; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    
-    .url-input-group { display: flex; gap: 8px; }
-    .url-input-group input { flex: 1; }
     
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 12px; font-weight: 600; z-index: 1000; display: none; }
     .toast.show { display: block; animation: fadeInOut 2s ease; }
@@ -208,7 +208,6 @@
     const ADMIN_ID = 'admin';
     const ADMIN_PASS = 'manga2026';
     
-    // LocalStorage keys
     const STORAGE_KEYS = {
       siteSettings: 'mangahub_site',
       mangaList: 'mangahub_manga',
@@ -219,7 +218,6 @@
       xImages: 'mangahub_x_images'
     };
     
-    // Default data
     let siteSettings = { siteName: 'MangaHub', mainTitle: '気になる漫画を試し読み', badge: '🔥 今週の注目' };
     
     let mangaList = [
@@ -248,12 +246,11 @@
     
     let xHistory = [];
     let xSchedule = [];
-    let xImages = [];
+    let xImages = []; // { name, dataUrl }
     
-    // Current editor state
     let currentTreePosts = [{ id: 1, type: 'tweet', content: '', images: [], imageCount: 4 }];
     let selectedImages = [];
-    
+
     const diagnosisQuestions = [
       { question: '見た目で選ぶなら？', options: [
         { emoji: '🌿', text: '清楚・ナチュラル系', type: 'A' },
@@ -301,27 +298,20 @@
     let isAdminLoggedIn = false, showLoginError = false;
     let selectedAccountId = 1;
 
-    // Load from localStorage
     function loadData() {
       try {
         const site = localStorage.getItem(STORAGE_KEYS.siteSettings);
         if (site) siteSettings = JSON.parse(site);
-        
         const manga = localStorage.getItem(STORAGE_KEYS.mangaList);
         if (manga) mangaList = JSON.parse(manga);
-        
         const accounts = localStorage.getItem(STORAGE_KEYS.xAccounts);
         if (accounts) xAccounts = JSON.parse(accounts);
-        
         const templates = localStorage.getItem(STORAGE_KEYS.xTemplates);
         if (templates) xTemplates = JSON.parse(templates);
-        
         const history = localStorage.getItem(STORAGE_KEYS.xHistory);
         if (history) xHistory = JSON.parse(history);
-        
         const schedule = localStorage.getItem(STORAGE_KEYS.xSchedule);
         if (schedule) xSchedule = JSON.parse(schedule);
-        
         const images = localStorage.getItem(STORAGE_KEYS.xImages);
         if (images) xImages = JSON.parse(images);
       } catch (e) { console.error('Load error:', e); }
@@ -492,7 +482,7 @@
       return `
         <div class="admin-group"><h3 class="admin-group-title"><span>✏️</span> ツリー投稿作成</h3>
           <div class="admin-card" style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
               <span style="font-size:11px">投稿先: <strong>${acc?.handle || '未選択'}</strong></span>
               <select class="admin-select" style="width:auto;padding:6px 10px" onchange="selectAccount(Number(this.value))">
                 ${xAccounts.map(a => `<option value="${a.id}" ${a.id===selectedAccountId?'selected':''}>${a.handle}</option>`).join('')}
@@ -505,9 +495,9 @@
                 <div class="tree-post-num">${idx + 1}</div>
                 <span class="tree-post-type">${idx === 0 ? '親ツイート' : 'リプライ'}</span>
                 <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-                  <label style="font-size:9px;opacity:0.6">画像枚数:</label>
-                  <select class="admin-select" style="width:60px;padding:4px" onchange="setImageCount(${idx}, this.value)">
-                    ${[1,2,3,4].map(n => `<option value="${n}" ${post.imageCount===n?'selected':''}>${n}枚</option>`).join('')}
+                  <label style="font-size:9px;opacity:0.6">画像:</label>
+                  <select class="admin-select" style="width:50px;padding:4px" onchange="setImageCount(${idx}, this.value)">
+                    ${[1,2,3,4].map(n => `<option value="${n}" ${post.imageCount===n?'selected':''}>${n}</option>`).join('')}
                   </select>
                   ${idx > 0 ? `<button class="btn btn-small btn-danger" onclick="removeTreePost(${idx})">削除</button>` : ''}
                 </div>
@@ -515,10 +505,8 @@
               <div class="tree-post-body">
                 <textarea class="admin-textarea" placeholder="投稿内容を入力..." onchange="updateTreePost(${idx}, this.value)">${post.content}</textarea>
                 <div class="tree-post-images">
-                  ${post.images.map((img, imgIdx) => `
-                    <div class="tree-post-img">${img.name || 'IMG'}<div class="tree-post-img-remove" onclick="removeImage(${idx}, ${imgIdx})">×</div></div>
-                  `).join('')}
-                  ${post.images.length < post.imageCount ? `<div class="tree-post-img" onclick="openImagePicker(${idx})" style="cursor:pointer;border:1px dashed #555">+ 追加</div>` : ''}
+                  ${post.images.map((img, imgIdx) => `<div class="tree-post-img">${img.name || 'IMG'}<div class="tree-post-img-remove" onclick="removeImage(${idx}, ${imgIdx})">×</div></div>`).join('')}
+                  ${post.images.length < post.imageCount ? `<div class="tree-post-img" onclick="openImagePicker(${idx})" style="cursor:pointer;border:1px dashed #555">+</div>` : ''}
                 </div>
               </div>
             </div>
@@ -526,9 +514,7 @@
           <button style="width:100%;background:#222;border:1px dashed #444;color:#fff;padding:10px;border-radius:8px;cursor:pointer" onclick="addTreePost()">+ リプライを追加</button>
         </div>
         <div class="admin-group"><h3 class="admin-group-title"><span>🔗</span> アフィリエイトリンク</h3>
-          <div class="admin-card">
-            <div class="admin-field"><label class="admin-label">リンクURL</label><input type="text" id="affLink" class="admin-input" placeholder="https://..."></div>
-          </div>
+          <div class="admin-card"><div class="admin-field"><label class="admin-label">リンクURL</label><input type="text" id="affLink" class="admin-input" placeholder="https://..."></div></div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="admin-save" style="flex:1" onclick="postNow()">今すぐ投稿</button>
@@ -538,55 +524,28 @@
     }
 
     function renderXTemplates() {
-      return `
-        <div class="admin-group"><h3 class="admin-group-title"><span>📝</span> 保存済みテンプレート</h3>
-          ${xTemplates.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">テンプレートがありません</p>' : xTemplates.map(t => `
-            <div class="template-item">
-              <div class="template-name">${t.name}</div>
-              <div class="template-preview">${t.content.replace(/\n/g, ' ')}</div>
-              <div class="template-meta">
-                <button class="btn btn-small btn-secondary" onclick="useTemplate(${t.id})">使用</button>
-                <button class="btn btn-small btn-outline" onclick="editTemplate(${t.id})">編集</button>
-                <button class="btn btn-small btn-outline" onclick="deleteTemplate(${t.id})">削除</button>
-              </div>
-            </div>
-          `).join('')}
-          <button style="width:100%;background:#111;border:2px dashed #333;color:#fff;padding:12px;border-radius:8px;margin-top:8px;cursor:pointer" onclick="createTemplate()">+ 新規テンプレート</button>
-        </div>`;
+      return `<div class="admin-group"><h3 class="admin-group-title"><span>📝</span> 保存済みテンプレート</h3>
+        ${xTemplates.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">テンプレートがありません</p>' : xTemplates.map(t => `
+          <div class="template-item"><div class="template-name">${t.name}</div><div class="template-preview">${t.content.replace(/\n/g, ' ')}</div><div class="template-meta"><button class="btn btn-small btn-secondary" onclick="useTemplate(${t.id})">使用</button><button class="btn btn-small btn-outline" onclick="deleteTemplate(${t.id})">削除</button></div></div>
+        `).join('')}
+        <button style="width:100%;background:#111;border:2px dashed #333;color:#fff;padding:12px;border-radius:8px;margin-top:8px;cursor:pointer" onclick="createTemplate()">+ 新規テンプレート</button>
+      </div>`;
     }
 
     function renderXSchedule() {
-      return `
-        <div class="admin-group"><h3 class="admin-group-title"><span>📅</span> 予約済み投稿</h3>
-          ${xSchedule.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">予約投稿がありません</p>' : xSchedule.map(s => `
-            <div class="schedule-item">
-              <div style="text-align:center">
-                <div class="schedule-time">${s.date}</div>
-                <div style="font-size:9px;opacity:0.5">${s.time}</div>
-              </div>
-              <div class="schedule-content">${s.content}</div>
-              <button class="btn btn-small btn-outline" onclick="cancelSchedule(${s.id})">取消</button>
-            </div>
-          `).join('')}
-        </div>`;
+      return `<div class="admin-group"><h3 class="admin-group-title"><span>📅</span> 予約済み投稿</h3>
+        ${xSchedule.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">予約投稿がありません</p>' : xSchedule.map(s => `
+          <div class="schedule-item"><div style="text-align:center"><div class="schedule-time">${s.date}</div><div style="font-size:9px;opacity:0.5">${s.time}</div></div><div class="schedule-content">${s.content}</div><button class="btn btn-small btn-outline" onclick="cancelSchedule(${s.id})">取消</button></div>
+        `).join('')}
+      </div>`;
     }
 
     function renderXHistory() {
-      return `
-        <div class="admin-group"><h3 class="admin-group-title"><span>📜</span> 送信履歴</h3>
-          ${xHistory.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">送信履歴がありません</p>' : xHistory.map(h => `
-            <div class="history-item">
-              <div class="history-header">
-                <span class="history-date">${h.date} ${h.time}</span>
-                <span class="history-status ${h.status}">${h.status === 'sent' ? '送信済' : h.status === 'scheduled' ? '予約中' : '失敗'}</span>
-              </div>
-              <div class="history-content">${h.content}</div>
-              <div style="margin-top:8px;display:flex;gap:6px">
-                <button class="btn btn-small btn-secondary" onclick="reuseHistory(${h.id})">再利用</button>
-              </div>
-            </div>
-          `).join('')}
-        </div>`;
+      return `<div class="admin-group"><h3 class="admin-group-title"><span>📜</span> 送信履歴</h3>
+        ${xHistory.length === 0 ? '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">送信履歴がありません</p>' : xHistory.map(h => `
+          <div class="history-item"><div class="history-header"><span class="history-date">${h.date} ${h.time}</span><span class="history-status ${h.status}">${h.status === 'sent' ? '送信済' : h.status === 'scheduled' ? '予約中' : '失敗'}</span></div><div class="history-content">${h.content}</div><div style="margin-top:8px"><button class="btn btn-small btn-secondary" onclick="reuseHistory(${h.id})">再利用</button></div></div>
+        `).join('')}
+      </div>`;
     }
 
     function renderXImages() {
@@ -594,17 +553,19 @@
         <div class="admin-group"><h3 class="admin-group-title"><span>🖼️</span> 画像ライブラリ</h3>
           <div class="admin-card" style="margin-bottom:10px">
             <label style="display:block;font-size:11px;margin-bottom:8px">フォルダから一括アップロード</label>
-            <input type="file" id="imageFolder" webkitdirectory multiple style="font-size:11px" onchange="uploadFolder(this)">
+            <input type="file" id="imageFolder" webkitdirectory multiple accept="image/*" style="font-size:11px" onchange="uploadFolder(this)">
           </div>
           <div class="image-grid">
             ${xImages.length === 0 ? '<p style="grid-column:span 4;font-size:11px;opacity:0.5;text-align:center;padding:20px">画像がありません</p>' : xImages.map((img, idx) => `
               <div class="image-item ${selectedImages.includes(idx)?'selected':''}" onclick="toggleImageSelect(${idx})">
-                ${img.name.substring(0,6)}
+                ${img.dataUrl ? `<img src="${img.dataUrl}" alt="${img.name}">` : `<div class="image-item-placeholder">${img.name.substring(0,8)}</div>`}
                 ${selectedImages.includes(idx) ? `<div class="image-item-order">${selectedImages.indexOf(idx)+1}</div>` : ''}
+                <div class="image-item-name">${img.name}</div>
               </div>
             `).join('')}
           </div>
-          ${selectedImages.length > 0 ? `<p style="font-size:10px;opacity:0.6;margin-top:8px">選択中: ${selectedImages.length}枚（名前順にソート）</p>` : ''}
+          ${selectedImages.length > 0 ? `<p style="font-size:10px;opacity:0.7;margin-top:10px">✓ ${selectedImages.length}枚選択中</p>` : ''}
+          ${xImages.length > 0 ? `<button class="btn btn-outline" style="width:100%;margin-top:12px;padding:10px" onclick="clearAllImages()">全ての画像を削除</button>` : ''}
         </div>`;
     }
 
@@ -612,27 +573,14 @@
       return `
         <div class="admin-group"><h3 class="admin-group-title"><span>🔍</span> URL画像取得</h3>
           <div class="admin-card">
-            <div class="admin-field">
-              <label class="admin-label">画像取得元URL</label>
-              <input type="text" id="scraperUrl" class="admin-input" placeholder="https://example.com/page">
-            </div>
-            <div class="admin-field">
-              <label class="admin-label">保存先フォルダ名</label>
-              <input type="text" id="scraperFolder" class="admin-input" placeholder="folder_name" value="scraped_images">
-            </div>
+            <div class="admin-field"><label class="admin-label">画像取得元URL</label><input type="text" id="scraperUrl" class="admin-input" placeholder="https://example.com/page"></div>
+            <div class="admin-field"><label class="admin-label">保存先フォルダ名</label><input type="text" id="scraperFolder" class="admin-input" placeholder="folder_name" value="scraped_images"></div>
             <button class="btn" onclick="scrapeImages()">画像を取得</button>
           </div>
           <div id="scrapeResult" style="margin-top:12px"></div>
         </div>
         <div class="admin-group"><h3 class="admin-group-title"><span>ℹ️</span> 使い方</h3>
-          <div class="admin-card">
-            <p style="font-size:11px;line-height:1.6;opacity:0.8">
-              1. 画像を取得したいページのURLを入力<br>
-              2. 保存先フォルダ名を指定<br>
-              3.「画像を取得」ボタンをクリック<br>
-              ※ CORSの制限により一部サイトでは取得できません
-            </p>
-          </div>
+          <div class="admin-card"><p style="font-size:11px;line-height:1.6;opacity:0.8">1. 画像を取得したいページのURLを入力<br>2. 保存先フォルダ名を指定<br>3.「画像を取得」ボタンをクリック<br>※ CORSの制限により一部サイトでは取得できません</p></div>
         </div>`;
     }
 
@@ -647,7 +595,6 @@
     function setAdminTab(t) { adminTab = t; render(); }
     function setXSubTab(t) { xSubTab = t; render(); }
 
-    // Site settings
     function saveSiteSettings() {
       siteSettings.siteName = document.getElementById('siteName').value;
       siteSettings.badge = document.getElementById('siteBadge').value;
@@ -655,28 +602,20 @@
       saveData(STORAGE_KEYS.siteSettings, siteSettings);
     }
 
-    // Manga
     function addNewManga() { const id = mangaList.length + 1; mangaList.push({ id, title: '新規作品', genre: 'ジャンル', rating: 4.0, badge: 'NEW', pages: 5, description: '説明文', type: 'A' }); saveData(STORAGE_KEYS.mangaList, mangaList); render(); }
     function editManga(id) { showToast('編集機能は開発中です'); }
     function deleteManga(id) { mangaList = mangaList.filter(m => m.id !== id); saveData(STORAGE_KEYS.mangaList, mangaList); render(); }
 
-    // X Accounts
     function selectAccount(id) { selectedAccountId = id; render(); }
     function addAccount() { const id = xAccounts.length + 1; xAccounts.push({ id, name: `アカウント${id}`, handle: `@account_${id}`, type: 'sub', apiKey: '', apiSecret: '', accessToken: '', accessSecret: '' }); saveData(STORAGE_KEYS.xAccounts, xAccounts); render(); }
-    function editAccount(id) { showToast('アカウント編集画面を開きます'); }
+    function editAccount(id) { showToast('アカウント編集は開発中です'); }
     function saveAccounts() {
       const acc = xAccounts.find(a => a.id === selectedAccountId);
-      if (acc) {
-        acc.apiKey = document.getElementById('accApiKey').value;
-        acc.apiSecret = document.getElementById('accApiSecret').value;
-        acc.accessToken = document.getElementById('accAccessToken').value;
-        acc.accessSecret = document.getElementById('accAccessSecret').value;
-      }
+      if (acc) { acc.apiKey = document.getElementById('accApiKey').value; acc.apiSecret = document.getElementById('accApiSecret').value; acc.accessToken = document.getElementById('accAccessToken').value; acc.accessSecret = document.getElementById('accAccessSecret').value; }
       saveData(STORAGE_KEYS.xAccounts, xAccounts);
     }
     function testConnection() { showToast('接続テスト中...（モック）'); }
 
-    // Tree posts
     function addTreePost() { currentTreePosts.push({ id: currentTreePosts.length + 1, type: 'reply', content: '', images: [], imageCount: 4 }); render(); }
     function removeTreePost(idx) { currentTreePosts.splice(idx, 1); render(); }
     function updateTreePost(idx, content) { currentTreePosts[idx].content = content; }
@@ -684,21 +623,17 @@
     function removeImage(postIdx, imgIdx) { currentTreePosts[postIdx].images.splice(imgIdx, 1); render(); }
     function openImagePicker(postIdx) { showToast('画像管理から選択してください'); xSubTab = 'images'; render(); }
 
-    // Templates
     function saveAsTemplate() {
       const name = prompt('テンプレート名を入力:');
       if (!name) return;
       const content = currentTreePosts.map(p => p.content).join('\n---\n');
       xTemplates.push({ id: xTemplates.length + 1, name, content, createdAt: new Date().toISOString().split('T')[0] });
       saveData(STORAGE_KEYS.xTemplates, xTemplates);
-      showToast('テンプレートを保存しました');
     }
     function useTemplate(id) { const t = xTemplates.find(x => x.id === id); if (t) { currentTreePosts = [{ id: 1, type: 'tweet', content: t.content, images: [], imageCount: 4 }]; xSubTab = 'editor'; render(); } }
-    function editTemplate(id) { showToast('テンプレート編集は開発中です'); }
     function deleteTemplate(id) { xTemplates = xTemplates.filter(t => t.id !== id); saveData(STORAGE_KEYS.xTemplates, xTemplates); render(); }
     function createTemplate() { xTemplates.push({ id: xTemplates.length + 1, name: '新規テンプレート', content: '', createdAt: new Date().toISOString().split('T')[0] }); saveData(STORAGE_KEYS.xTemplates, xTemplates); render(); }
 
-    // Post
     function postNow() {
       const content = currentTreePosts.map(p => p.content).join(' | ');
       xHistory.unshift({ id: xHistory.length + 1, date: new Date().toLocaleDateString('ja-JP'), time: new Date().toLocaleTimeString('ja-JP', {hour:'2-digit',minute:'2-digit'}), content, status: 'sent' });
@@ -720,14 +655,25 @@
     function cancelSchedule(id) { xSchedule = xSchedule.filter(s => s.id !== id); saveData(STORAGE_KEYS.xSchedule, xSchedule); render(); }
     function reuseHistory(id) { const h = xHistory.find(x => x.id === id); if (h) { currentTreePosts = [{ id: 1, type: 'tweet', content: h.content, images: [], imageCount: 4 }]; xSubTab = 'editor'; render(); } }
 
-    // Images
+    // 画像アップロード - 実際のプレビュー表示
     function uploadFolder(input) {
-      const files = Array.from(input.files).sort((a, b) => a.name.localeCompare(b.name));
-      files.forEach(f => { xImages.push({ name: f.name, data: URL.createObjectURL(f) }); });
-      saveData(STORAGE_KEYS.xImages, xImages.map(i => ({ name: i.name }))); // Only save names
-      showToast(`${files.length}枚の画像を追加しました`);
-      render();
+      const files = Array.from(input.files).filter(f => f.type.startsWith('image/')).sort((a, b) => a.name.localeCompare(b.name));
+      let loaded = 0;
+      files.forEach(f => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          xImages.push({ name: f.name, dataUrl: e.target.result });
+          loaded++;
+          if (loaded === files.length) {
+            saveData(STORAGE_KEYS.xImages, xImages);
+            render();
+          }
+        };
+        reader.readAsDataURL(f);
+      });
+      if (files.length === 0) showToast('画像ファイルが見つかりません');
     }
+
     function toggleImageSelect(idx) {
       const i = selectedImages.indexOf(idx);
       if (i >= 0) selectedImages.splice(i, 1);
@@ -735,21 +681,22 @@
       render();
     }
 
-    // Scraper (mock)
+    function clearAllImages() {
+      if (confirm('全ての画像を削除しますか？')) {
+        xImages = [];
+        selectedImages = [];
+        saveData(STORAGE_KEYS.xImages, xImages);
+        render();
+      }
+    }
+
     function scrapeImages() {
       const url = document.getElementById('scraperUrl').value;
-      const folder = document.getElementById('scraperFolder').value;
       if (!url) { showToast('URLを入力してください'); return; }
-      document.getElementById('scrapeResult').innerHTML = `
-        <div class="admin-card">
-          <p style="font-size:11px;color:#f59e0b">⚠️ ブラウザのセキュリティ制限により、直接の画像取得は制限されています。</p>
-          <p style="font-size:10px;opacity:0.7;margin-top:8px">実際の運用では、サーバーサイドスクリプト（Python/Node.js等）での取得を推奨します。</p>
-          <p style="font-size:10px;opacity:0.5;margin-top:8px">URL: ${url}<br>フォルダ: ${folder}</p>
-        </div>`;
+      document.getElementById('scrapeResult').innerHTML = `<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ ブラウザのセキュリティ制限により、直接の画像取得は制限されています。</p><p style="font-size:10px;opacity:0.7;margin-top:8px">サーバーサイドスクリプトでの取得を推奨します。</p></div>`;
       showToast('取得機能はサーバー側で実装が必要です');
     }
 
-    // Init
     loadData();
     window.addEventListener('hashchange', checkHash);
     checkHash();
