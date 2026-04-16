@@ -552,46 +552,56 @@
           <h3 class="admin-group-title"><span>🔍</span> URL画像取得</h3>
           <div id="urlInputs">
             ${(scrapeUrls.length === 0 ? [{url:'', folder:''}] : scrapeUrls).map((item, idx) => `
-              <div class="admin-card" style="margin-bottom:8px;display:flex;gap:8px;align-items:center">
-                <div style="flex:1">
-                  <input type="text" class="admin-input" style="margin-bottom:6px;font-size:11px" placeholder="https://..." value="${item.url}" onchange="updateScrapeUrl(${idx}, 'url', this.value)">
-                  <input type="text" class="admin-input" style="font-size:11px" placeholder="フォルダ名" value="${item.folder}" onchange="updateScrapeUrl(${idx}, 'folder', this.value)">
+              <div class="admin-card url-input-card" style="margin-bottom:8px">
+                <div style="display:flex;gap:8px;align-items:flex-start">
+                  <div style="flex:1">
+                    <input type="text" class="admin-input url-field" style="margin-bottom:6px;font-size:11px" placeholder="https://..." value="${item.url || ''}">
+                    <input type="text" class="admin-input folder-field" style="font-size:11px" placeholder="フォルダ名" value="${item.folder || ''}">
+                  </div>
+                  <button class="btn btn-small btn-danger" onclick="removeScrapeUrl(${idx})" style="padding:8px;margin-top:4px">✕</button>
                 </div>
-                <button class="btn btn-small btn-danger" onclick="removeScrapeUrl(${idx})" style="padding:8px">✕</button>
               </div>
             `).join('')}
           </div>
           <button class="btn btn-outline" style="width:100%;margin-bottom:10px" onclick="addScrapeUrl()">+ URL追加</button>
           <button class="btn" onclick="scrapeImages()" id="scrapeBtn">🚀 一括取得</button>
+          <div id="scrapeProgress" style="margin-top:12px"></div>
         </div>
         <div class="admin-group">
           <h3 class="admin-group-title"><span>📁</span> 取得済みフォルダ</h3>
-          ${Object.keys(imageFolders).length === 0 ? 
-            '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">フォルダがありません</p>' : 
-            Object.keys(imageFolders).map(folder => `
-              <div class="admin-card" style="margin-bottom:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                  <div onclick="toggleFolderView('${folder}')" style="cursor:pointer;flex:1">
-                    <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
-                    <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚</div>
-                  </div>
-                  <div style="display:flex;gap:4px">
-                    <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">追加</button>
-                    <button class="btn btn-small btn-outline" onclick="downloadFolder('${folder}')">💾</button>
-                    <button class="btn btn-small btn-danger" onclick="deleteFolder('${folder}')">✕</button>
-                  </div>
-                </div>
-                <div id="folder_${folder.replace(/[^a-zA-Z0-9]/g, '_')}" style="display:none;margin-top:10px">
-                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
-                    ${imageFolders[folder].slice(0, 8).map(img => `
-                      <img src="${img.dataUrl}" style="width:100%;height:50px;object-fit:cover;border-radius:4px">
-                    `).join('')}
-                    ${imageFolders[folder].length > 8 ? `<div style="display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;font-size:10px;height:50px">+${imageFolders[folder].length - 8}</div>` : ''}
-                  </div>
-                </div>
-              </div>
-            `).join('')}
+          <div id="folderList">
+            ${renderFolderList()}
+          </div>
         </div>`;
+    }
+    
+    function renderFolderList() {
+      if (Object.keys(imageFolders).length === 0) {
+        return '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">フォルダがありません</p>';
+      }
+      return Object.keys(imageFolders).map(folder => `
+        <div class="admin-card" style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div onclick="toggleFolderView('${folder}')" style="cursor:pointer;flex:1">
+              <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
+              <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚</div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">追加</button>
+              <button class="btn btn-small btn-outline" onclick="downloadFolderImages('${folder}')">💾</button>
+              <button class="btn btn-small btn-danger" onclick="deleteFolder('${folder}')">✕</button>
+            </div>
+          </div>
+          <div id="folder_${folder.replace(/[^a-zA-Z0-9]/g, '_')}" style="display:none;margin-top:10px">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+              ${imageFolders[folder].slice(0, 8).map(img => `
+                <img src="${img.dataUrl}" style="width:100%;height:50px;object-fit:cover;border-radius:4px">
+              `).join('')}
+              ${imageFolders[folder].length > 8 ? `<div style="display:flex;align-items:center;justify-content:center;background:#222;border-radius:4px;font-size:10px;height:50px">+${imageFolders[folder].length - 8}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
     
     let scrapeUrls = [{url:'', folder:''}];
@@ -605,31 +615,43 @@
       if (scrapeUrls.length === 0) scrapeUrls = [{url:'', folder:''}];
       render();
     }
-    function updateScrapeUrl(idx, key, value) {
-      scrapeUrls[idx][key] = value;
-    }
     function toggleFolderView(folder) {
       const el = document.getElementById('folder_' + folder.replace(/[^a-zA-Z0-9]/g, '_'));
       if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
     
-    async function downloadFolder(folderName) {
+    function downloadFolderImages(folderName) {
       const images = imageFolders[folderName];
-      if (!images || images.length === 0) return;
-      
-      showToast('ダウンロード準備中...');
-      
-      // 各画像を個別にダウンロード
-      for (let i = 0; i < images.length; i++) {
-        const img = images[i];
-        const link = document.createElement('a');
-        link.href = img.dataUrl;
-        link.download = `${folderName}_${String(i + 1).padStart(3, '0')}.jpg`;
-        link.click();
-        await new Promise(r => setTimeout(r, 200)); // 少し待つ
+      if (!images || images.length === 0) {
+        showToast('画像がありません');
+        return;
       }
       
-      showToast(`${images.length}枚をダウンロード`);
+      // 1枚ずつダウンロード
+      let downloaded = 0;
+      
+      function downloadNext() {
+        if (downloaded >= images.length) {
+          showToast(`${images.length}枚ダウンロード完了`);
+          return;
+        }
+        
+        const img = images[downloaded];
+        const link = document.createElement('a');
+        link.href = img.dataUrl;
+        link.download = `${folderName}_${String(downloaded + 1).padStart(3, '0')}.jpg`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        downloaded++;
+        showToast(`ダウンロード中: ${downloaded}/${images.length}`);
+        
+        setTimeout(downloadNext, 500);
+      }
+      
+      downloadNext();
     }
 
     // Actions
@@ -864,24 +886,52 @@
 
     // Scraper - URLごとにフォルダ保存
     async function scrapeImages() {
-      const validUrls = scrapeUrls.filter(item => item.url.startsWith('http'));
-      if (validUrls.length === 0) { showToast('URLを入力してください'); return; }
+      const urlCards = document.querySelectorAll('#urlInputs .url-input-card');
+      const validUrls = [];
+      
+      urlCards.forEach(card => {
+        const urlInput = card.querySelector('.url-field');
+        const folderInput = card.querySelector('.folder-field');
+        if (urlInput && folderInput) {
+          const url = urlInput.value.trim();
+          const folder = folderInput.value.trim();
+          if (url.startsWith('http')) {
+            validUrls.push({ url, folder: folder || 'folder_' + Date.now() });
+          }
+        }
+      });
+      
+      if (validUrls.length === 0) { 
+        showToast('URLを入力してください'); 
+        return; 
+      }
       
       const btn = document.getElementById('scrapeBtn');
+      const progress = document.getElementById('scrapeProgress');
+      
       btn.disabled = true;
-      btn.textContent = '取得中...';
       
       const proxies = [
         u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
         u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-        u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
       ];
       
       let totalDownloaded = 0;
       
-      for (const item of validUrls) {
+      for (let urlIdx = 0; urlIdx < validUrls.length; urlIdx++) {
+        const item = validUrls[urlIdx];
         const url = item.url;
-        const folder = item.folder || 'folder_' + Date.now();
+        const folder = item.folder;
+        
+        progress.innerHTML = `
+          <div class="admin-card" style="border-color:#e63946">
+            <div style="font-size:12px;font-weight:600;margin-bottom:8px">📥 ${folder}</div>
+            <div style="font-size:11px;opacity:0.7">URL ${urlIdx + 1}/${validUrls.length}</div>
+            <div style="background:#333;height:6px;border-radius:3px;margin-top:8px">
+              <div id="pbar" style="background:#e63946;height:100%;width:0%;border-radius:3px"></div>
+            </div>
+            <div id="ptext" style="font-size:10px;opacity:0.5;margin-top:4px">準備中...</div>
+          </div>`;
         
         let imageUrls = [];
         
@@ -897,11 +947,14 @@
             else if (url.includes('/girls/')) workType = 'girls';
             
             imageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_main.jpg`);
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 15; i++) {
               imageUrls.push(`https://img.dlsite.jp/modpub/images2/work/${workType}/${folderId}/${rjId}_img_smp${i}.jpg`);
             }
           }
         } else {
+          const pt = document.getElementById('ptext');
+          if (pt) pt.textContent = 'ページ解析中...';
+          
           for (const makeProxy of proxies) {
             try {
               const response = await fetch(makeProxy(url));
@@ -929,48 +982,53 @@
           }
         }
         
-        if (imageUrls.length === 0) continue;
+        if (imageUrls.length === 0) {
+          const pt = document.getElementById('ptext');
+          if (pt) pt.textContent = '画像が見つかりません';
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
         
-        // ダウンロード
         const downloadedImages = [];
         let consecutiveFails = 0;
         
-        for (const imgUrl of imageUrls) {
-          const results = await Promise.allSettled(
-            proxies.map(async (makeProxy) => {
-              const controller = new AbortController();
-              const timeout = setTimeout(() => controller.abort(), 8000);
-              try {
-                const response = await fetch(makeProxy(imgUrl), { signal: controller.signal });
-                clearTimeout(timeout);
-                if (!response.ok) return null;
-                const blob = await response.blob();
-                if (blob.size < 3000 || !blob.type.startsWith('image/')) return null;
-                return blob;
-              } catch (e) { clearTimeout(timeout); return null; }
-            })
-          );
+        for (let i = 0; i < imageUrls.length; i++) {
+          const imgUrl = imageUrls[i];
           
-          let success = false;
-          for (const result of results) {
-            if (result.status === 'fulfilled' && result.value) {
-              const blob = result.value;
-              const dataUrl = await new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-              });
-              downloadedImages.push({
-                name: `${folder}_${String(downloadedImages.length + 1).padStart(3, '0')}.jpg`,
-                dataUrl
-              });
-              success = true;
-              break;
-            }
+          const pct = Math.round(((i + 1) / imageUrls.length) * 100);
+          const bar = document.getElementById('pbar');
+          const text = document.getElementById('ptext');
+          if (bar) bar.style.width = pct + '%';
+          if (text) text.textContent = `${downloadedImages.length}枚取得 (${i + 1}/${imageUrls.length})`;
+          
+          let blob = null;
+          for (const makeProxy of proxies) {
+            try {
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 6000);
+              const response = await fetch(makeProxy(imgUrl), { signal: controller.signal });
+              clearTimeout(timeout);
+              if (!response.ok) continue;
+              const b = await response.blob();
+              if (b.size >= 3000 && b.type.startsWith('image/')) {
+                blob = b;
+                break;
+              }
+            } catch (e) { continue; }
           }
           
-          if (success) consecutiveFails = 0;
-          else {
+          if (blob) {
+            const dataUrl = await new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            });
+            downloadedImages.push({
+              name: `${folder}_${String(downloadedImages.length + 1).padStart(3, '0')}.jpg`,
+              dataUrl
+            });
+            consecutiveFails = 0;
+          } else {
             consecutiveFails++;
             if (consecutiveFails >= 3 && downloadedImages.length > 0) break;
           }
@@ -979,21 +1037,32 @@
         if (downloadedImages.length > 0) {
           imageFolders[folder] = downloadedImages;
           totalDownloaded += downloadedImages.length;
+          localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+          
+          const folderList = document.getElementById('folderList');
+          if (folderList) folderList.innerHTML = renderFolderList();
+          
+          const pt = document.getElementById('ptext');
+          if (pt) pt.textContent = `✅ ${downloadedImages.length}枚を保存`;
         }
       }
       
-      localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
-      
       if (totalDownloaded > 0) {
-        showToast(`${totalDownloaded}枚を${validUrls.length}フォルダに保存`);
+        progress.innerHTML = `
+          <div class="admin-card" style="border-color:#22c55e">
+            <p style="font-size:12px;color:#22c55e">✅ 完了: ${totalDownloaded}枚</p>
+          </div>`;
+        showToast(`${totalDownloaded}枚保存`);
       } else {
-        showToast('取得失敗');
+        progress.innerHTML = `
+          <div class="admin-card" style="border-color:#f59e0b">
+            <p style="font-size:11px;color:#f59e0b">⚠️ 取得失敗</p>
+          </div>`;
       }
       
       scrapeUrls = [{url:'', folder:''}];
       btn.disabled = false;
       btn.textContent = '🚀 一括取得';
-      render();
     }
     
     // 未使用だが残す
