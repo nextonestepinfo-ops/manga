@@ -123,7 +123,8 @@
       xTemplates: 'mangahub_x_templates',
       xHistory: 'mangahub_x_history',
       xSchedule: 'mangahub_x_schedule',
-      xImages: 'mangahub_x_images'
+      xImages: 'mangahub_x_images',
+      imageFolders: 'mangahub_image_folders'
     };
     
     // データ
@@ -150,6 +151,7 @@
     let xHistory = [];
     let xSchedule = [];
     let xImages = [];
+    let imageFolders = {}; // { folderName: [{ name, dataUrl }] }
     
     let currentTreePosts = [{ id: 1, type: 'tweet', content: '', images: [], imageCount: 4 }];
     let selectedImages = [];
@@ -178,6 +180,8 @@
         if (schedule) xSchedule = JSON.parse(schedule);
         const images = localStorage.getItem(STORAGE_KEYS.xImages);
         if (images) xImages = JSON.parse(images);
+        const folders = localStorage.getItem(STORAGE_KEYS.imageFolders);
+        if (folders) imageFolders = JSON.parse(folders);
       } catch (e) { console.error('Load error:', e); }
     }
 
@@ -471,16 +475,36 @@
               <label class="admin-label">保存先フォルダ名</label>
               <input type="text" id="scraperFolder" class="admin-input" placeholder="folder_name" value="scraped_images">
             </div>
-            <button class="btn" onclick="scrapeImages()">画像を取得</button>
+            <button class="btn" onclick="scrapeImages()" id="scrapeBtn">画像を取得</button>
           </div>
           <div id="scrapeResult" style="margin-top:12px"></div>
         </div>
         <div class="admin-group">
-          <h3 class="admin-group-title"><span>ℹ️</span> 注意</h3>
+          <h3 class="admin-group-title"><span>📁</span> 取得済みフォルダ</h3>
+          ${Object.keys(imageFolders).length === 0 ? 
+            '<p style="font-size:11px;opacity:0.5;text-align:center;padding:20px">フォルダがありません</p>' : 
+            Object.keys(imageFolders).map(folder => `
+              <div class="admin-card" style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:12px;font-weight:600">📁 ${folder}</div>
+                  <div style="font-size:10px;opacity:0.5">${imageFolders[folder].length}枚の画像</div>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-small btn-secondary" onclick="loadFolderToLibrary('${folder}')">ライブラリに追加</button>
+                  <button class="btn btn-small btn-outline" onclick="deleteFolder('${folder}')">削除</button>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+        <div class="admin-group">
+          <h3 class="admin-group-title"><span>ℹ️</span> 使い方</h3>
           <div class="admin-card">
-            <p style="font-size:11px;line-height:1.6;opacity:0.8">
-              ブラウザのセキュリティ制限により、直接の画像取得は制限されています。<br>
-              サーバーサイドでの実装を推奨します。
+            <p style="font-size:11px;line-height:1.8;opacity:0.8">
+              1. 画像を取得したいページのURLを入力<br>
+              2. フォルダ名を指定して「画像を取得」<br>
+              3. 取得した画像は「取得済みフォルダ」に保存<br>
+              4.「ライブラリに追加」で画像管理に移動<br>
+              ※ 一部サイトはCORS制限で取得不可
             </p>
           </div>
         </div>`;
@@ -652,15 +676,139 @@
       }
     }
 
-    // Scraper
-    function scrapeImages() {
-      const url = document.getElementById('scraperUrl').value;
+    // Scraper - 実際に動作する版
+    async function scrapeImages() {
+      const url = document.getElementById('scraperUrl').value.trim();
+      const folder = document.getElementById('scraperFolder').value.trim() || 'scraped_images';
+      
       if (!url) { showToast('URLを入力してください'); return; }
-      document.getElementById('scrapeResult').innerHTML = `
-        <div class="admin-card">
-          <p style="font-size:11px;color:#f59e0b">⚠️ ブラウザのセキュリティ制限により取得できません。</p>
-        </div>`;
-      showToast('サーバー側での実装が必要です');
+      
+      const btn = document.getElementById('scrapeBtn');
+      const resultDiv = document.getElementById('scrapeResult');
+      
+      btn.disabled = true;
+      btn.textContent = '取得中...';
+      resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px">🔄 画像を取得中...</p></div>';
+      
+      try {
+        // CORSプロキシを使用
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+        const response = await fetch(proxyUrl);
+        const html = await response.text();
+        
+        // HTMLから画像URLを抽出
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const imgElements = doc.querySelectorAll('img');
+        
+        const imageUrls = [];
+        imgElements.forEach(img => {
+          let src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+          if (src) {
+            // 相対URLを絶対URLに変換
+            if (src.startsWith('//')) src = 'https:' + src;
+            else if (src.startsWith('/')) {
+              const urlObj = new URL(url);
+              src = urlObj.origin + src;
+            } else if (!src.startsWith('http')) {
+              const urlObj = new URL(url);
+              src = urlObj.origin + '/' + src;
+            }
+            // 画像URLのみを追加（小さいアイコンを除外）
+            if (src.match(/\.(jpg|jpeg|png|gif|webp)/i) || src.includes('image')) {
+              imageUrls.push(src);
+            }
+          }
+        });
+        
+        if (imageUrls.length === 0) {
+          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 画像が見つかりませんでした</p></div>';
+          btn.disabled = false;
+          btn.textContent = '画像を取得';
+          return;
+        }
+        
+        // 重複を除去
+        const uniqueUrls = [...new Set(imageUrls)];
+        
+        resultDiv.innerHTML = `<div class="admin-card"><p style="font-size:11px">📥 ${uniqueUrls.length}枚の画像をダウンロード中...</p><div id="progressBar" style="background:#333;height:4px;border-radius:2px;margin-top:8px"><div style="background:#e63946;height:100%;width:0%;border-radius:2px;transition:width 0.3s" id="progressFill"></div></div></div>`;
+        
+        // 画像をダウンロード
+        const downloadedImages = [];
+        let completed = 0;
+        
+        for (let i = 0; i < uniqueUrls.length; i++) {
+          try {
+            const imgUrl = uniqueUrls[i];
+            const imgProxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(imgUrl);
+            const imgResponse = await fetch(imgProxy);
+            const blob = await imgResponse.blob();
+            
+            if (blob.type.startsWith('image/')) {
+              const reader = new FileReader();
+              const dataUrl = await new Promise((resolve) => {
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              });
+              
+              const fileName = `${folder}_${String(i + 1).padStart(3, '0')}.${blob.type.split('/')[1] || 'jpg'}`;
+              downloadedImages.push({ name: fileName, dataUrl });
+            }
+          } catch (e) {
+            console.log('Image download failed:', uniqueUrls[i]);
+          }
+          
+          completed++;
+          document.getElementById('progressFill').style.width = `${(completed / uniqueUrls.length) * 100}%`;
+        }
+        
+        if (downloadedImages.length > 0) {
+          // フォルダに保存
+          imageFolders[folder] = downloadedImages;
+          localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+          
+          resultDiv.innerHTML = `<div class="admin-card" style="border-color:#22c55e"><p style="font-size:11px;color:#22c55e">✅ ${downloadedImages.length}枚の画像を「${folder}」に保存しました</p></div>`;
+          showToast(`${downloadedImages.length}枚保存しました`);
+          render();
+        } else {
+          resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#f59e0b">⚠️ 画像のダウンロードに失敗しました（CORS制限の可能性）</p></div>';
+        }
+        
+      } catch (e) {
+        console.error('Scrape error:', e);
+        resultDiv.innerHTML = '<div class="admin-card"><p style="font-size:11px;color:#e63946">❌ 取得に失敗しました。URLを確認してください。</p></div>';
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '画像を取得';
+    }
+    
+    // フォルダの画像をライブラリに追加
+    function loadFolderToLibrary(folderName) {
+      if (!imageFolders[folderName]) return;
+      
+      const images = imageFolders[folderName];
+      images.forEach(img => {
+        // 重複チェック
+        if (!xImages.find(x => x.name === img.name)) {
+          xImages.push(img);
+        }
+      });
+      
+      saveData(STORAGE_KEYS.xImages, xImages);
+      showToast(`${images.length}枚をライブラリに追加しました`);
+      xSubTab = 'images';
+      render();
+    }
+    
+    // フォルダを削除
+    function deleteFolder(folderName) {
+      if (confirm(`「${folderName}」を削除しますか？`)) {
+        delete imageFolders[folderName];
+        localStorage.setItem(STORAGE_KEYS.imageFolders, JSON.stringify(imageFolders));
+        showToast('フォルダを削除しました');
+        render();
+      }
     }
 
     // Init
