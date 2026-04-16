@@ -67,7 +67,16 @@
     .ad-placeholder { margin-top: 6px; height: 50px; background: #222; border-radius: 4px; }
     
     .pagination { margin-top: 24px; margin-bottom: 24px; }
-    .pagination-btn { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 24px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .pagination-nav { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .pagination-pages { display: flex; align-items: center; gap: 4px; }
+    .pagination-arrow { width: 36px; height: 36px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .pagination-arrow:hover:not(.disabled) { background: #333; }
+    .pagination-arrow.disabled { opacity: 0.3; cursor: not-allowed; }
+    .pagination-num { width: 36px; height: 36px; background: #111; border: 1px solid #333; color: #fff; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .pagination-num:hover { background: #222; }
+    .pagination-num.active { background: #e63946; border-color: #e63946; }
+    .pagination-dots { color: #666; padding: 0 4px; }
+    .pagination-info { text-align: center; font-size: 11px; opacity: 0.5; margin-top: 10px; }
     
     .footer { padding: 20px 16px; border-top: 1px solid #222; text-align: center; }
     .footer p { font-size: 11px; opacity: 0.4; }
@@ -115,26 +124,46 @@
     // LocalStorageキー（管理画面と共有）
     const STORAGE_KEYS = {
       siteSettings: 'mangahub_site',
-      mangaList: 'mangahub_manga'
+      mangaList: 'mangahub_manga',
+      tags: 'mangahub_tags',
+      badges: 'mangahub_badges'
     };
     
     // デフォルトデータ
     let siteSettings = { siteName: 'MangaHub', mainTitle: '気になる漫画を試し読み', badge: '🔥 今週の注目' };
     
-    let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A' },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B' },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C' },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D' },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E' },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F' },
-      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A' },
-      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B' },
-      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C' },
-      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D' },
-      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E' },
-      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F' },
+    let tagsMaster = [
+      { id: 1, name: 'ラブコメ', color: '#ec4899' },
+      { id: 2, name: 'ファンタジー', color: '#8b5cf6' },
+      { id: 3, name: '学園', color: '#3b82f6' },
+      { id: 4, name: '大人向け', color: '#f59e0b' },
+      { id: 5, name: '癒し系', color: '#10b981' },
     ];
+    
+    let badgesMaster = [
+      { id: 1, name: 'NEW', color: '#22c55e' },
+      { id: 2, name: '人気', color: '#e63946' },
+    ];
+    
+    let mangaList = [
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。毎日が幸せいっぱい！', type: 'A' },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との、大人の恋愛ストーリー', type: 'B' },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！衣装映え抜群のシチュエーション', type: 'C' },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界で出会ったエルフとの非日常ファンタジー', type: 'D' },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: '笑いが止まらない！テンポ抜群のラブコメディ', type: 'E' },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '翻弄される快感…小悪魔彼女との駆け引きラブ', type: 'F' },
+      { id: 7, title: '純愛ラブストーリー', genre: '甘々いちゃラブ', rating: 4.8, badge: null, tags: [1, 5], pages: 8, description: 'お互いの好意が伝わる、尊い純愛物語', type: 'A' },
+      { id: 8, title: 'OLの秘密の恋', genre: '大人の余裕系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: 'オフィスで始まる、しっとり大人の恋愛', type: 'B' },
+      { id: 9, title: 'ナースの献身', genre: 'コスチューム系', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'ナース服が眩しい、病院ラブコメディ', type: 'C' },
+      { id: 10, title: 'サキュバスの誘惑', genre: 'ファンタジー', rating: 4.8, badge: null, tags: [2, 4], pages: 7, description: '魔界からやってきたサキュバスとの甘い生活', type: 'D' },
+      { id: 11, title: 'シェアハウス騒動記', genre: 'ラブコメ', rating: 4.4, badge: null, tags: [1, 3], pages: 6, description: '賑やかなシェアハウスでのドタバタラブコメ', type: 'E' },
+      { id: 12, title: '秘密の関係', genre: '小悪魔系', rating: 4.6, badge: null, tags: [1, 4], pages: 5, description: '二人だけの秘密…刺激的な駆け引き', type: 'F' },
+    ];
+    
+    function getBadgeColor(badgeName) {
+      const badge = badgesMaster.find(b => b.name === badgeName);
+      return badge ? badge.color : '#e63946';
+    }
 
     const diagnosisQuestions = [
       { question: '見た目で選ぶなら？', options: [
@@ -184,6 +213,8 @@
     let diagAnswers = [];
     let showResult = false;
     let resultType = null;
+    let currentListPage = 1;
+    const ITEMS_PER_PAGE = 12;
 
     // LocalStorageから読み込み
     function loadData() {
@@ -192,6 +223,10 @@
         if (site) siteSettings = JSON.parse(site);
         const manga = localStorage.getItem(STORAGE_KEYS.mangaList);
         if (manga) mangaList = JSON.parse(manga);
+        const tags = localStorage.getItem(STORAGE_KEYS.tags);
+        if (tags) tagsMaster = JSON.parse(tags);
+        const badges = localStorage.getItem(STORAGE_KEYS.badges);
+        if (badges) badgesMaster = JSON.parse(badges);
       } catch (e) { console.error('Load error:', e); }
     }
 
@@ -248,31 +283,73 @@
         <section class="section">
           <h2 class="section-title">📖 人気作品</h2>
           <div class="manga-grid">
-            ${mangaList.map((m, i) => `
-              <div class="manga-card" onclick="openManga(${m.id})">
-                <div class="manga-thumb">
-                  サムネイル
-                  ${m.badge ? `<span class="manga-badge">${m.badge}</span>` : ''}
-                </div>
-                <div class="manga-info">
-                  <div class="manga-title">${m.title}</div>
-                  <div class="manga-meta">
-                    <span class="manga-genre">${m.genre}</span>
-                    <span class="manga-rating">★ ${m.rating}</span>
+            ${(() => {
+              const totalPages = Math.ceil(mangaList.length / ITEMS_PER_PAGE);
+              const startIdx = (currentListPage - 1) * ITEMS_PER_PAGE;
+              const endIdx = startIdx + ITEMS_PER_PAGE;
+              const pageItems = mangaList.slice(startIdx, endIdx);
+              
+              return pageItems.map((m, i) => `
+                <div class="manga-card" onclick="openManga(${m.id})">
+                  <div class="manga-thumb">
+                    サムネイル
+                    ${m.badge ? `<span class="manga-badge">${m.badge}</span>` : ''}
+                  </div>
+                  <div class="manga-info">
+                    <div class="manga-title">${m.title}</div>
+                    <div class="manga-meta">
+                      <span class="manga-genre">${m.genre}</span>
+                      <span class="manga-rating">★ ${m.rating}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              ${(i + 1) % 6 === 0 && i < mangaList.length - 1 ? '<div class="ad-slot"><span class="ad-label">広告枠</span><div class="ad-placeholder"></div></div>' : ''}
-            `).join('')}
+                ${(i + 1) % 6 === 0 && i < pageItems.length - 1 ? '<div class="ad-slot"><span class="ad-label">広告枠</span><div class="ad-placeholder"></div></div>' : ''}
+              `).join('');
+            })()}
           </div>
-          <div class="pagination">
-            <button class="pagination-btn">次のページ</button>
-          </div>
+          ${renderPagination()}
         </section>
         
         <footer class="footer">
           <p>© 2026 ${siteSettings.siteName}</p>
         </footer>`;
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(mangaList.length / ITEMS_PER_PAGE);
+      if (totalPages <= 1) return '';
+      
+      let pages = [];
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentListPage - 1 && i <= currentListPage + 1)) {
+          pages.push(i);
+        } else if (pages[pages.length - 1] !== '...') {
+          pages.push('...');
+        }
+      }
+      
+      return `
+        <div class="pagination">
+          <div class="pagination-nav">
+            <button class="pagination-arrow ${currentListPage === 1 ? 'disabled' : ''}" onclick="goToPage(${currentListPage - 1})" ${currentListPage === 1 ? 'disabled' : ''}>←</button>
+            <div class="pagination-pages">
+              ${pages.map(p => p === '...' ? 
+                '<span class="pagination-dots">...</span>' : 
+                `<button class="pagination-num ${p === currentListPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`
+              ).join('')}
+            </div>
+            <button class="pagination-arrow ${currentListPage === totalPages ? 'disabled' : ''}" onclick="goToPage(${currentListPage + 1})" ${currentListPage === totalPages ? 'disabled' : ''}>→</button>
+          </div>
+          <div class="pagination-info">${currentListPage} / ${totalPages} ページ</div>
+        </div>`;
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(mangaList.length / ITEMS_PER_PAGE);
+      if (page < 1 || page > totalPages) return;
+      currentListPage = page;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderStart() {
