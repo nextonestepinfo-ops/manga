@@ -7,8 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; overflow-x: hidden; }
     body { font-family: 'Noto Sans JP', sans-serif; background: #000; color: #fff; display: flex; justify-content: center; }
-    #app { width: 100%; max-width: 390px; min-height: 100vh; background: #000; }
+    #app { width: 100%; max-width: 390px; min-height: 100vh; background: #000; overflow-y: auto; }
     button, input { font-family: inherit; outline: none; }
     
     .header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #000; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100; }
@@ -45,7 +46,9 @@
     .diagnosis-recommend { display: flex; gap: 8px; margin-bottom: 10px; }
     .diagnosis-recommend-item { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 8px; cursor: pointer; }
     .diagnosis-recommend-item:first-child { border-color: #e63946; }
-    .diagnosis-recommend-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 4px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; opacity: 0.5; }
+    .diagnosis-recommend-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 4px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; overflow: hidden; }
+    .diagnosis-recommend-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .diagnosis-recommend-placeholder { opacity: 0.5; }
     .diagnosis-recommend-title { font-size: 10px; font-weight: 600; text-align: center; }
     .btn-reset { width: 100%; background: transparent; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: 10px; }
     .btn-start { width: 100%; background: #e63946; color: #fff; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 700; }
@@ -54,7 +57,9 @@
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
     .manga-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .manga-card { background: #111; border-radius: 8px; overflow: hidden; cursor: pointer; }
-    .manga-thumb { aspect-ratio: 1446/2048; background: #333; position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
+    .manga-thumb { aspect-ratio: 1446/2048; background: #333; position: relative; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+    .manga-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .manga-thumb-placeholder { opacity: 0.5; }
     .manga-badge { position: absolute; top: 4px; left: 4px; background: #e63946; color: #fff; padding: 2px 5px; border-radius: 4px; font-size: 8px; font-weight: 700; }
     .manga-info { padding: 8px; }
     .manga-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
@@ -87,7 +92,9 @@
     
     .manga-detail { padding: 20px 16px; border-bottom: 1px solid #222; }
     .manga-detail-inner { display: flex; gap: 16px; }
-    .manga-cover { width: 100px; aspect-ratio: 1446/2048; background: #333; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; opacity: 0.5; }
+    .manga-cover { width: 100px; aspect-ratio: 1446/2048; background: #333; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; overflow: hidden; }
+    .manga-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .manga-cover-placeholder { opacity: 0.5; }
     .manga-detail-info { flex: 1; min-width: 0; }
     .manga-detail-badges { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .manga-detail-badge { background: #e63946; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
@@ -98,7 +105,9 @@
     
     .reader { padding: 16px; }
     .reader-pages { display: flex; flex-direction: column; gap: 8px; }
-    .reader-page { background: #333; border-radius: 8px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center; position: relative; font-size: 14px; opacity: 0.5; }
+    .reader-page { background: #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 14px; overflow: hidden; }
+    .reader-page img { width: 100%; height: auto; display: block; border-radius: 8px; }
+    .reader-page-placeholder { padding: 100px 0; opacity: 0.5; }
     .reader-page-num { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
     
     .cta { padding: 20px 16px; background: linear-gradient(180deg, transparent, rgba(230,57,70,0.1)); }
@@ -112,7 +121,9 @@
     .related-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
     .related-list { display: flex; gap: 12px; overflow-x: auto; }
     .related-item { flex-shrink: 0; width: 100px; cursor: pointer; }
-    .related-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.5; }
+    .related-thumb { aspect-ratio: 1446/2048; background: #333; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; overflow: hidden; }
+    .related-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .related-thumb-placeholder { opacity: 0.5; }
     .related-name { font-size: 12px; font-weight: 600; }
     .related-rating { font-size: 10px; color: #e63946; }
   </style>
@@ -312,8 +323,8 @@
                 const thumb = getMangaThumbnail(m);
                 return `
                 <div class="manga-card" onclick="openManga(${m.id})">
-                  <div class="manga-thumb" ${thumb ? `style="background:none"` : ''}>
-                    ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover">` : 'サムネイル'}
+                  <div class="manga-thumb">
+                    ${thumb ? `<img src="${thumb}">` : '<span class="manga-thumb-placeholder">サムネイル</span>'}
                     ${m.badge ? `<span class="manga-badge">${m.badge}</span>` : ''}
                   </div>
                   <div class="manga-info">
@@ -408,8 +419,8 @@
         <div class="diagnosis-recommend">
           ${rec.map(m => `
             <div class="diagnosis-recommend-item" onclick="openManga(${m.id})">
-              <div class="diagnosis-recommend-thumb" ${getMangaThumbnail(m) ? 'style="background:none"' : ''}>
-                ${getMangaThumbnail(m) ? `<img src="${getMangaThumbnail(m)}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : 'サムネ'}
+              <div class="diagnosis-recommend-thumb">
+                ${getMangaThumbnail(m) ? `<img src="${getMangaThumbnail(m)}">` : '<span class="diagnosis-recommend-placeholder">サムネ</span>'}
               </div>
               <div class="diagnosis-recommend-title">${m.title}</div>
             </div>
@@ -438,8 +449,8 @@
         
         <section class="manga-detail">
           <div class="manga-detail-inner">
-            <div class="manga-cover" ${thumb ? `style="background:none"` : ''}>
-              ${thumb ? `<img src="${thumb}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : '表紙'}
+            <div class="manga-cover">
+              ${thumb ? `<img src="${thumb}">` : '<span class="manga-cover-placeholder">表紙</span>'}
             </div>
             <div class="manga-detail-info">
               <div class="manga-detail-badges">
@@ -457,14 +468,14 @@
           <div class="reader-pages">
             ${allImages.length > 0 ? 
               allImages.map((img, i) => `
-                <div class="reader-page" style="background:none;padding:0">
-                  <img src="${img.dataUrl}" style="width:100%;height:auto;display:block;border-radius:8px">
+                <div class="reader-page">
+                  <img src="${img.dataUrl}">
                   <span class="reader-page-num">${i + 1}/${totalPages}</span>
                 </div>
               `).join('') :
               Array.from({length: totalPages}, (_, i) => `
                 <div class="reader-page">
-                  ${i + 1}ページ目
+                  <span class="reader-page-placeholder">${i + 1}ページ目</span>
                   <span class="reader-page-num">${i + 1}/${totalPages}</span>
                 </div>
               `).join('')
@@ -500,8 +511,8 @@
               const rThumb = getMangaThumbnail(r);
               return `
               <div class="related-item" onclick="openManga(${r.id})">
-                <div class="related-thumb" ${rThumb ? 'style="background:none"' : ''}>
-                  ${rThumb ? `<img src="${rThumb}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : 'サムネ'}
+                <div class="related-thumb">
+                  ${rThumb ? `<img src="${rThumb}">` : '<span class="related-thumb-placeholder">サムネ</span>'}
                 </div>
                 <p class="related-name">${r.title}</p>
                 <p class="related-rating">★ ${r.rating}</p>
