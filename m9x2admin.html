@@ -124,6 +124,8 @@
     const STORAGE_KEYS = {
       siteSettings: 'mangahub_site',
       mangaList: 'mangahub_manga',
+      tags: 'mangahub_tags',
+      badges: 'mangahub_badges',
       xAccounts: 'mangahub_x_accounts',
       xTemplates: 'mangahub_x_templates',
       xHistory: 'mangahub_x_history',
@@ -135,13 +137,32 @@
     // データ
     let siteSettings = { siteName: 'MangaHub', mainTitle: '気になる漫画を試し読み', badge: '🔥 今週の注目' };
     
+    // タグ・バッジマスター
+    let tagsMaster = [
+      { id: 1, name: 'ラブコメ', color: '#ec4899' },
+      { id: 2, name: 'ファンタジー', color: '#8b5cf6' },
+      { id: 3, name: '学園', color: '#3b82f6' },
+      { id: 4, name: '大人向け', color: '#f59e0b' },
+      { id: 5, name: '癒し系', color: '#10b981' },
+      { id: 6, name: 'ダーク', color: '#6b7280' },
+    ];
+    
+    let badgesMaster = [
+      { id: 1, name: 'NEW', color: '#22c55e' },
+      { id: 2, name: '人気', color: '#e63946' },
+      { id: 3, name: '急上昇', color: '#f59e0b' },
+      { id: 4, name: '完結', color: '#6b7280' },
+      { id: 5, name: '限定', color: '#8b5cf6' },
+      { id: 6, name: 'おすすめ', color: '#3b82f6' },
+    ];
+    
     let mangaList = [
-      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A' },
-      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B' },
-      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, pages: 5, description: 'メイド服が眩しい！', type: 'C' },
-      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', pages: 7, description: '異世界ファンタジー', type: 'D' },
-      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, pages: 4, description: 'テンポ抜群のラブコメ', type: 'E' },
-      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, pages: 6, description: '駆け引きラブ', type: 'F' },
+      { id: 1, title: '甘々同棲ライフ', genre: '甘々いちゃラブ', rating: 4.8, badge: 'NEW', tags: [1, 5], pages: 6, description: '一途で素直な彼女との甘い同棲生活。', type: 'A' },
+      { id: 2, title: '年上彼女の誘惑', genre: '大人の余裕系', rating: 4.7, badge: '人気', tags: [1, 4], pages: 8, description: '包容力抜群のお姉さん上司との恋愛。', type: 'B' },
+      { id: 3, title: 'メイドカフェ物語', genre: 'コスチューム系', rating: 4.6, badge: null, tags: [1, 3], pages: 5, description: 'メイド服が眩しい！', type: 'C' },
+      { id: 4, title: 'エルフと異世界生活', genre: 'ファンタジー', rating: 4.9, badge: '人気', tags: [2, 5], pages: 7, description: '異世界ファンタジー', type: 'D' },
+      { id: 5, title: 'ドタバタ学園コメディ', genre: 'ラブコメ', rating: 4.5, badge: null, tags: [1, 3], pages: 4, description: 'テンポ抜群のラブコメ', type: 'E' },
+      { id: 6, title: '小悪魔彼女の罠', genre: '小悪魔系', rating: 4.7, badge: null, tags: [1, 4], pages: 6, description: '駆け引きラブ', type: 'F' },
     ];
     
     let xAccounts = [
@@ -160,6 +181,7 @@
     
     let currentTreePosts = [{ id: 1, type: 'tweet', content: '', images: [], imageCount: 4 }];
     let selectedImages = [];
+    let editingManga = null; // 編集中の作品
     
     // State
     let isLoggedIn = false;
@@ -175,6 +197,10 @@
         if (site) siteSettings = JSON.parse(site);
         const manga = localStorage.getItem(STORAGE_KEYS.mangaList);
         if (manga) mangaList = JSON.parse(manga);
+        const tags = localStorage.getItem(STORAGE_KEYS.tags);
+        if (tags) tagsMaster = JSON.parse(tags);
+        const badges = localStorage.getItem(STORAGE_KEYS.badges);
+        if (badges) badgesMaster = JSON.parse(badges);
         const accounts = localStorage.getItem(STORAGE_KEYS.xAccounts);
         if (accounts) xAccounts = JSON.parse(accounts);
         const templates = localStorage.getItem(STORAGE_KEYS.xTemplates);
@@ -276,24 +302,276 @@
         <button class="admin-save" onclick="saveSiteSettings()">変更を保存</button>`;
     }
 
+    let worksSubTab = 'list'; // list, tags, badges
+    
     function renderAdminWorks() {
       return `
-        <button style="width:100%;background:#111;border:2px dashed #333;color:#fff;padding:14px;border-radius:10px;margin-bottom:16px;cursor:pointer" onclick="addNewManga()">+ 新規作品を追加</button>
-        ${mangaList.map(m => `
-          <div class="admin-card">
-            <div style="display:flex;gap:12px">
-              <div style="width:50px;height:70px;background:#333;border-radius:6px;flex-shrink:0"></div>
+        <div class="x-subtabs" style="margin-bottom:20px">
+          <button class="x-subtab ${worksSubTab==='list'?'active':''}" onclick="setWorksSubTab('list')">作品一覧</button>
+          <button class="x-subtab ${worksSubTab==='tags'?'active':''}" onclick="setWorksSubTab('tags')">タグ管理</button>
+          <button class="x-subtab ${worksSubTab==='badges'?'active':''}" onclick="setWorksSubTab('badges')">バッジ管理</button>
+        </div>
+        ${worksSubTab === 'list' ? renderWorksList() : ''}
+        ${worksSubTab === 'tags' ? renderTagsManager() : ''}
+        ${worksSubTab === 'badges' ? renderBadgesManager() : ''}
+        ${editingManga ? renderEditModal() : ''}`;
+    }
+    
+    function setWorksSubTab(tab) {
+      worksSubTab = tab;
+      render();
+    }
+    
+    function renderWorksList() {
+      return `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:14px;opacity:0.6">全 ${mangaList.length} 作品</div>
+          <button class="btn" onclick="addNewManga()">+ 新規作品を追加</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(400px, 1fr));gap:16px">
+        ${mangaList.map((m, idx) => `
+          <div class="admin-card" style="position:relative">
+            <div style="position:absolute;top:-8px;left:-8px;width:32px;height:32px;background:#e63946;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${idx + 1}</div>
+            <div style="display:flex;gap:14px">
+              <div style="width:70px;height:90px;background:#333;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0.5">No.${idx + 1}</div>
               <div style="flex:1;min-width:0">
-                <div style="font-size:12px;font-weight:700;margin-bottom:2px">${m.title}</div>
-                <div style="font-size:10px;opacity:0.6;margin-bottom:6px">${m.genre} | ★${m.rating}</div>
-                <div style="display:flex;gap:6px">
-                  <button class="btn btn-small btn-secondary">編集</button>
+                <div style="font-size:15px;font-weight:700;margin-bottom:6px">${m.title}</div>
+                <div style="font-size:12px;opacity:0.6;margin-bottom:4px">${m.genre} | タイプ: ${m.type} | ★${m.rating}</div>
+                <div style="font-size:11px;opacity:0.4;margin-bottom:8px">ID: ${m.id} | URL: /manga/${m.id}/</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+                  ${m.badge ? `<span style="background:${getBadgeColor(m.badge)};padding:4px 10px;border-radius:6px;font-size:11px">${m.badge}</span>` : ''}
+                  ${(m.tags || []).map(tagId => {
+                    const tag = tagsMaster.find(t => t.id === tagId);
+                    return tag ? `<span style="background:${tag.color};padding:4px 10px;border-radius:6px;font-size:11px">${tag.name}</span>` : '';
+                  }).join('')}
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-small" onclick="openEditManga(${m.id})">編集</button>
                   <button class="btn btn-small btn-outline" onclick="deleteManga(${m.id})">削除</button>
                 </div>
               </div>
             </div>
           </div>
-        `).join('')}`;
+        `).join('')}
+        </div>`;
+    }
+    
+    function getBadgeColor(badgeName) {
+      const badge = badgesMaster.find(b => b.name === badgeName);
+      return badge ? badge.color : '#e63946';
+    }
+    
+    function renderTagsManager() {
+      return `
+        <div class="admin-group">
+          <h3 class="admin-group-title"><span>🏷️</span> タグ管理</h3>
+          <div class="admin-card">
+            <div style="display:flex;gap:10px;margin-bottom:16px">
+              <input type="text" id="newTagName" class="admin-input" style="flex:1" placeholder="タグ名">
+              <input type="color" id="newTagColor" value="#ec4899" style="width:50px;height:42px;border:none;border-radius:8px;cursor:pointer">
+              <button class="btn" onclick="addTag()">追加</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              ${tagsMaster.map(tag => `
+                <div style="display:flex;align-items:center;gap:8px;background:#111;border:1px solid #333;padding:8px 12px;border-radius:8px">
+                  <span style="width:16px;height:16px;background:${tag.color};border-radius:4px"></span>
+                  <span style="font-size:13px">${tag.name}</span>
+                  <button onclick="deleteTag(${tag.id})" style="background:none;border:none;color:#666;cursor:pointer;font-size:16px">×</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+    
+    function renderBadgesManager() {
+      return `
+        <div class="admin-group">
+          <h3 class="admin-group-title"><span>🎖️</span> バッジ管理</h3>
+          <div class="admin-card">
+            <div style="display:flex;gap:10px;margin-bottom:16px">
+              <input type="text" id="newBadgeName" class="admin-input" style="flex:1" placeholder="バッジ名">
+              <input type="color" id="newBadgeColor" value="#e63946" style="width:50px;height:42px;border:none;border-radius:8px;cursor:pointer">
+              <button class="btn" onclick="addBadge()">追加</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              ${badgesMaster.map(badge => `
+                <div style="display:flex;align-items:center;gap:8px;background:${badge.color};padding:8px 14px;border-radius:8px">
+                  <span style="font-size:13px;font-weight:600">${badge.name}</span>
+                  <button onclick="deleteBadge(${badge.id})" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:16px">×</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+    }
+    
+    function renderEditModal() {
+      const m = editingManga;
+      return `
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;overflow-y:auto">
+          <div style="max-width:600px;margin:40px auto;padding:24px;background:#111;border-radius:16px;border:1px solid #333">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+              <h3 style="font-size:18px;font-weight:700">作品を編集</h3>
+              <button onclick="closeEditModal()" style="background:none;border:none;color:#fff;font-size:28px;cursor:pointer">&times;</button>
+            </div>
+            
+            <div class="admin-field">
+              <label class="admin-label">タイトル</label>
+              <input type="text" id="editTitle" class="admin-input" value="${m.title}">
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div class="admin-field">
+                <label class="admin-label">ジャンル</label>
+                <input type="text" id="editGenre" class="admin-input" value="${m.genre}">
+              </div>
+              <div class="admin-field">
+                <label class="admin-label">タイプ (A-F)</label>
+                <select id="editType" class="admin-select">
+                  ${['A','B','C','D','E','F'].map(t => `<option value="${t}" ${m.type===t?'selected':''}>${t}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div class="admin-field">
+                <label class="admin-label">評価 (1.0-5.0)</label>
+                <input type="number" id="editRating" class="admin-input" value="${m.rating}" step="0.1" min="1" max="5">
+              </div>
+              <div class="admin-field">
+                <label class="admin-label">ページ数</label>
+                <input type="number" id="editPages" class="admin-input" value="${m.pages || 5}">
+              </div>
+            </div>
+            
+            <div class="admin-field">
+              <label class="admin-label">説明</label>
+              <textarea id="editDesc" class="admin-textarea">${m.description || ''}</textarea>
+            </div>
+            
+            <div class="admin-field">
+              <label class="admin-label">バッジ（1つ選択）</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+                <button class="badge-option ${!m.badge?'selected':''}" onclick="selectBadge(null)" style="background:#333;padding:8px 14px;border-radius:8px;border:2px solid ${!m.badge?'#e63946':'transparent'};color:#fff;cursor:pointer">なし</button>
+                ${badgesMaster.map(b => `
+                  <button class="badge-option ${m.badge===b.name?'selected':''}" onclick="selectBadge('${b.name}')" style="background:${b.color};padding:8px 14px;border-radius:8px;border:2px solid ${m.badge===b.name?'#fff':'transparent'};color:#fff;cursor:pointer;font-weight:600">${b.name}</button>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="admin-field">
+              <label class="admin-label">タグ（複数選択可）</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+                ${tagsMaster.map(t => `
+                  <button class="tag-option" onclick="toggleTag(${t.id})" style="background:${(m.tags||[]).includes(t.id)?t.color:'#333'};padding:8px 14px;border-radius:8px;border:2px solid ${(m.tags||[]).includes(t.id)?'#fff':'transparent'};color:#fff;cursor:pointer">${t.name}</button>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div style="display:flex;gap:12px;margin-top:24px">
+              <button class="btn btn-secondary" style="flex:1;padding:14px" onclick="closeEditModal()">キャンセル</button>
+              <button class="btn" style="flex:2;padding:14px" onclick="saveEditManga()">保存</button>
+            </div>
+          </div>
+        </div>`;
+    }
+    
+    // タグ・バッジ管理関数
+    function addTag() {
+      const name = document.getElementById('newTagName').value.trim();
+      const color = document.getElementById('newTagColor').value;
+      if (!name) { showToast('タグ名を入力してください'); return; }
+      const newId = tagsMaster.length > 0 ? Math.max(...tagsMaster.map(t => t.id)) + 1 : 1;
+      tagsMaster.push({ id: newId, name, color });
+      localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(tagsMaster));
+      showToast('タグを追加しました');
+      render();
+    }
+    
+    function deleteTag(id) {
+      if (!confirm('このタグを削除しますか？')) return;
+      tagsMaster = tagsMaster.filter(t => t.id !== id);
+      // 作品からも削除
+      mangaList.forEach(m => {
+        if (m.tags) m.tags = m.tags.filter(tid => tid !== id);
+      });
+      localStorage.setItem(STORAGE_KEYS.tags, JSON.stringify(tagsMaster));
+      saveData(STORAGE_KEYS.mangaList, mangaList);
+      render();
+    }
+    
+    function addBadge() {
+      const name = document.getElementById('newBadgeName').value.trim();
+      const color = document.getElementById('newBadgeColor').value;
+      if (!name) { showToast('バッジ名を入力してください'); return; }
+      const newId = badgesMaster.length > 0 ? Math.max(...badgesMaster.map(b => b.id)) + 1 : 1;
+      badgesMaster.push({ id: newId, name, color });
+      localStorage.setItem(STORAGE_KEYS.badges, JSON.stringify(badgesMaster));
+      showToast('バッジを追加しました');
+      render();
+    }
+    
+    function deleteBadge(id) {
+      if (!confirm('このバッジを削除しますか？')) return;
+      const badge = badgesMaster.find(b => b.id === id);
+      badgesMaster = badgesMaster.filter(b => b.id !== id);
+      // 作品からも削除
+      if (badge) {
+        mangaList.forEach(m => {
+          if (m.badge === badge.name) m.badge = null;
+        });
+      }
+      localStorage.setItem(STORAGE_KEYS.badges, JSON.stringify(badgesMaster));
+      saveData(STORAGE_KEYS.mangaList, mangaList);
+      render();
+    }
+    
+    // 作品編集関数
+    function openEditManga(id) {
+      editingManga = JSON.parse(JSON.stringify(mangaList.find(m => m.id === id)));
+      if (!editingManga.tags) editingManga.tags = [];
+      render();
+    }
+    
+    function closeEditModal() {
+      editingManga = null;
+      render();
+    }
+    
+    function selectBadge(badgeName) {
+      editingManga.badge = badgeName;
+      render();
+    }
+    
+    function toggleTag(tagId) {
+      if (!editingManga.tags) editingManga.tags = [];
+      const idx = editingManga.tags.indexOf(tagId);
+      if (idx >= 0) editingManga.tags.splice(idx, 1);
+      else editingManga.tags.push(tagId);
+      render();
+    }
+    
+    function saveEditManga() {
+      const idx = mangaList.findIndex(m => m.id === editingManga.id);
+      if (idx < 0) return;
+      
+      mangaList[idx] = {
+        ...mangaList[idx],
+        title: document.getElementById('editTitle').value.trim(),
+        genre: document.getElementById('editGenre').value.trim(),
+        type: document.getElementById('editType').value,
+        rating: parseFloat(document.getElementById('editRating').value) || 4.5,
+        pages: parseInt(document.getElementById('editPages').value) || 5,
+        description: document.getElementById('editDesc').value.trim(),
+        badge: editingManga.badge,
+        tags: editingManga.tags
+      };
+      
+      saveData(STORAGE_KEYS.mangaList, mangaList);
+      showToast('保存しました');
+      editingManga = null;
+      render();
     }
 
     function renderAdminX() {
@@ -788,12 +1066,14 @@
 
     // Manga
     function addNewManga() {
-      const id = mangaList.length + 1;
-      mangaList.push({ id, title: '新規作品', genre: 'ジャンル', rating: 4.0, badge: 'NEW', pages: 5, description: '説明文', type: 'A' });
+      const id = mangaList.length > 0 ? Math.max(...mangaList.map(m => m.id)) + 1 : 1;
+      const newManga = { id, title: '新規作品', genre: 'ジャンル', rating: 4.0, badge: null, tags: [], pages: 5, description: '説明文', type: 'A' };
+      mangaList.push(newManga);
       saveData(STORAGE_KEYS.mangaList, mangaList);
-      render();
+      openEditManga(id); // すぐに編集モーダルを開く
     }
     function deleteManga(id) {
+      if (!confirm('この作品を削除しますか？')) return;
       mangaList = mangaList.filter(m => m.id !== id);
       saveData(STORAGE_KEYS.mangaList, mangaList);
       render();
